@@ -24,12 +24,10 @@ class Transaction {
     static std::string generateUniqueId();
     static TransactionType validateType(const std::string& typeStr);
     static Currency validateCurrency(const std::string& currencyStr);
-    static void validateDate(const std::string& dateStr);
-    static void validateAmount(double amount);
-    static void validateIBAN(const std::string& iban);
     static void validateTransactionLogic(TransactionType type, const std::string& srcIBAN, const std::string& tgtIBAN);
 
 public:
+    Transaction() : amount(0), type(DEPOSIT), currency(USD) {}
     Transaction(const std::string& typeStr, const std::string& currencyStr,
                 const std::string& dateStr, double amt,
                 const std::string& srcIBAN, const std::string& tgtIBAN);
