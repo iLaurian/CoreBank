@@ -2,8 +2,8 @@
 
 #include "../utils/Validator.h"
 
-BankAccount::BankAccount(const std::string& iban, double initialBalance)
-    : IBAN(iban), balance(initialBalance), transactionCount(0), transactionCapacity(100) {
+BankAccount::BankAccount(const std::string& iban, double initialBalance, const Currency curr)
+    : IBAN(iban), balance(initialBalance), currency(curr), transactionCount(0), transactionCapacity(100) {
 
     Validator::validateIBAN(iban);
     Validator::validateAmount(initialBalance);
@@ -16,7 +16,7 @@ BankAccount::~BankAccount() {
 }
 
 BankAccount::BankAccount(const BankAccount& other)
-    : IBAN(other.IBAN), balance(other.balance), transactionCount(other.transactionCount), transactionCapacity(other.transactionCapacity) {
+    : IBAN(other.IBAN), balance(other.balance), currency(other.currency), transactionCount(other.transactionCount), transactionCapacity(other.transactionCapacity) {
 
     transactions = new Transaction[transactionCapacity];
     for (int i = 0; i < transactionCount; ++i) {
@@ -62,6 +62,10 @@ int BankAccount::getTransactionCount() const {
     return transactionCount;
 }
 
+Currency BankAccount::getCurrency() const {
+    return currency;
+}
+
 void BankAccount::addTransaction(const Transaction& t) {
     if (transactionCount >= transactionCapacity) {
         resizeTransactions();
@@ -69,22 +73,42 @@ void BankAccount::addTransaction(const Transaction& t) {
     transactions[transactionCount++] = t;
 }
 
-void BankAccount::processDeposit(double amount, const std::string& currency, const std::string& dateStr) {
-    Validator::validateAmount(amount);
+const Transaction& BankAccount::getTransaction(int index) const {
+    if (index < 0 || index >= transactionCount) {
+        throw std::out_of_range("Transaction index out of range");
+    }
+    return transactions[index];
+}
+
+void BankAccount::processDeposit(double amount, const std::string& dateStr) {
+    const Transaction t(DEPOSIT, currency, dateStr, amount, "ATM", IBAN);
     balance += amount;
-    const Transaction t("DEPOSIT", currency, dateStr, amount, "ATM", IBAN);
     addTransaction(t);
 }
 
-void BankAccount::processWithdrawal(double amount, const std::string& currency, const std::string& dateStr) {
-    Validator::validateAmount(amount);
-
+void BankAccount::processWithdrawal(double amount, const std::string& dateStr) {
     if (amount > balance) {
         throw std::invalid_argument("Insufficient funds for withdrawal");
     }
 
+    const Transaction t(WITHDRAWAL, currency, dateStr, amount, IBAN, "ATM");
     balance -= amount;
-    const Transaction t("WITHDRAWAL", currency, dateStr, amount, IBAN, "ATM");
+    addTransaction(t);
+}
+
+void BankAccount::processOutgoingTransfer(double amount, const std::string &toIBAN, const std::string &dateStr) {
+    if (amount > balance) {
+        throw std::invalid_argument("Insufficient funds for transfer");
+    }
+
+    const Transaction t(TRANSFER, currency, dateStr, amount, IBAN, toIBAN);
+    balance -= amount;
+    addTransaction(t);
+}
+
+void BankAccount::processIncomingTransfer(double amount, const std::string& fromIBAN, const std::string& dateStr) {
+    const Transaction t(TRANSFER, currency, dateStr, amount, fromIBAN, IBAN);
+    balance += amount;
     addTransaction(t);
 }
 

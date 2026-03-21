@@ -56,6 +56,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
     models/BankAccount.h
     utils/Validator.h
     utils/Validator.cpp
+        models/Client.h
+        models/Client.cpp
 )
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )

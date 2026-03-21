@@ -16,22 +16,6 @@ std::string Transaction::generateUniqueId() {
     return ss.str();
 }
 
-TransactionType Transaction::validateType(const std::string& typeStr) {
-    if (typeStr == "DEPOSIT") return DEPOSIT;
-    if (typeStr == "WITHDRAWAL") return WITHDRAWAL;
-    if (typeStr == "TRANSFER") return TRANSFER;
-    if (typeStr == "PAYMENT") return PAYMENT;
-    throw std::invalid_argument("Invalid transaction type: " + typeStr);
-}
-
-Currency Transaction::validateCurrency(const std::string& currencyStr) {
-    if (currencyStr == "USD") return USD;
-    if (currencyStr == "EUR") return EUR;
-    if (currencyStr == "GBP") return GBP;
-    if (currencyStr == "JPY") return JPY;
-    throw std::invalid_argument("Invalid currency: " + currencyStr);
-}
-
 void Transaction::validateTransactionLogic(TransactionType type, const std::string& srcIBAN, const std::string& tgtIBAN) {
     if (type == DEPOSIT) {
         if (srcIBAN != "ATM") throw std::invalid_argument("DEPOSIT transactions must have source IBAN as 'ATM'");
@@ -50,14 +34,14 @@ void Transaction::validateTransactionLogic(TransactionType type, const std::stri
     }
 }
 
-Transaction::Transaction(const std::string& typeStr, const std::string& currencyStr,
+Transaction::Transaction(const TransactionType tType, Currency curr,
                          const std::string& dateStr, double amt,
                          const std::string& srcIBAN, const std::string& tgtIBAN)
     : id(generateUniqueId()),
       date(dateStr),
       amount(amt),
-      type(validateType(typeStr)),
-      currency(validateCurrency(currencyStr)),
+      type(tType),
+      currency(curr),
       sourceIBAN(srcIBAN),
       targetIBAN(tgtIBAN) {
     Validator::validateDate(dateStr);
