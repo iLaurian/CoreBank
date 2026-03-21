@@ -5,7 +5,7 @@
 #include <iostream>
 
 enum Currency {
-    USD, EUR, GBP, JPY
+    USD, EUR, GBP, JPY, CHF
 };
 
 enum TransactionType {

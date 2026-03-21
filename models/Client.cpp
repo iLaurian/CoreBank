@@ -1,12 +1,17 @@
 #include "Client.h"
-
 #include <cmath>
+#include "../utils/CurrencyConverter.h"
 
 Client::Client(const std::string &cnp, const std::string &name, const std::string &address, double monthlyIncome)
-    : cnp(cnp), name(name), address(address), monthlyIncome(monthlyIncome) {
+    : cnp(cnp), name(name), address(address), monthlyIncome(monthlyIncome), creditScore(300) {
+    updateCreditScore();
 }
 
 Client::~Client() {
+    for (BankAccount* acc : accounts) {
+        delete acc;
+    }
+    accounts.clear();
 }
 
 void Client::updateCreditScore() {
@@ -103,11 +108,11 @@ BankAccount* Client::getBankAccount(const std::string &iban) const {
 }
 
 double Client::calculateTotalNetWorth() const {
-    double total = 0;
+    double totalUSD = 0;
     for (const BankAccount *acc : accounts) {
-        total += acc->getBalance();
+        totalUSD += CurrencyConverter::convert(acc->getBalance(), acc->getCurrency(), USD);
     }
-    return total;
+    return totalUSD;
 }
 
 void Client::evaluateLoanEligibility(double loanAmount, int months) const {
@@ -145,9 +150,14 @@ void Client::transferBetweenOwnAccounts(const std::string &fromIBAN, const std::
     BankAccount* source = getBankAccount(fromIBAN);
     BankAccount* target = getBankAccount(toIBAN);
 
-    source->processOutgoingTransfer(amount, fromIBAN, dateStr);
-    target->processIncomingTransfer(amount, toIBAN, dateStr);
+    source->processOutgoingTransfer(amount, toIBAN, dateStr);
+    double convertedAmount = CurrencyConverter::convert(amount, source->getCurrency(), target->getCurrency());
+    target->processIncomingTransfer(convertedAmount, fromIBAN, dateStr);
+}
 
+void Client::sendMoneyExternal(const std::string &fromOwnIBAN, const std::string &toExternalIBAN, double amount, const std::string &dateStr) {
+    BankAccount* source = getBankAccount(fromOwnIBAN);
+    source->processOutgoingTransfer(amount, toExternalIBAN, dateStr);
     updateCreditScore();
 }
 

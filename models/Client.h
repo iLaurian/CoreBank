@@ -32,6 +32,7 @@ public:
     double calculateTotalNetWorth() const;
     void evaluateLoanEligibility(double loanAmount, int months) const;
     void transferBetweenOwnAccounts(const std::string& fromIBAN, const std::string& toIBAN, double amount, const std::string& dateStr);
+    void sendMoneyExternal(const std::string& fromOwnIBAN, const std::string& toExternalIBAN, double amount, const std::string& dateStr);
 
     friend std::ostream& operator<< (std::ostream& os, const Client& client);
 };

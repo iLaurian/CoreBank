@@ -1,36 +1,56 @@
 #include <iostream>
+#include <exception>
 #include "models/Transaction.h"
 #include "models/BankAccount.h"
+#include "models/Client.h"
 
 int main() {
     try {
-        BankAccount myAccount("RO12INGB34567890", 1000.00);
+        Client myClient("1900101123456", "John Doe", "123 Silicon Valley, Tech City", 4500.00);
 
-        std::cout << myAccount.getIBAN() << "\n";
+        std::cout << myClient.getCNP() << "\n";
+        std::cout << myClient.getName() << "\n";
+        std::cout << myClient.getAddress() << "\n";
+        std::cout << myClient.getMonthlyIncome() << "\n";
+        std::cout << myClient.getCreditScore() << "\n";
 
-        myAccount.processDeposit(500.0, "2024-03-01");
-        myAccount.processWithdrawal(200.0, "2024-03-02");
-        myAccount.processDeposit(150.0, "2024-03-03");
-        myAccount.processWithdrawal(50.0, "2024-03-04");
-        myAccount.processDeposit(300.0, "2024-03-05");
-        myAccount.processDeposit(100.0, "2024-03-06");
+        BankAccount* usdAccount = new BankAccount("RO12INGB000000000001", 1500.00, USD);
+        BankAccount* eurAccount = new BankAccount("RO99BTRL000000000002", 500.00, EUR);
 
-        Transaction manualTx(PAYMENT, USD, "2024-03-10", 75.00, myAccount.getIBAN(), "RO99UTILITATI123");
-        myAccount.addTransaction(manualTx);
+        myClient.addBankAccount(usdAccount);
+        myClient.addBankAccount(eurAccount);
 
-        std::cout << myAccount.getTransactionCount() << "\n\n";
+        BankAccount* accUSD = myClient.getBankAccount("RO12INGB000000000001");
+        accUSD->processDeposit(300.00, "2026-03-21");
+        accUSD->processWithdrawal(50.00, "2026-03-22");
 
-        std::cout << myAccount << "\n\n";
+        myClient.transferBetweenOwnAccounts(
+            "RO12INGB000000000001",
+            "RO99BTRL000000000002",
+            200.00,
+            "2026-03-23"
+        );
 
-        BankAccount savingsAccount = myAccount;
+        myClient.sendMoneyExternal(
+            "RO99BTRL000000000002",
+            "DE56SPRK999999999999",
+            150.00,
+            "2026-03-24"
+        );
 
-        savingsAccount.processDeposit(9000.0, "2024-03-07");
+        myClient.evaluateLoanEligibility(15000.00, 60);
 
-        std::cout << myAccount.getBalance() << " USD\n";
-        std::cout << savingsAccount.getBalance() << " USD\n";
+        myClient.removeBankAccount("RO12INGB000000000001");
+
+        // myClient.sendMoneyExternal(
+        //     "RO12INGB000000000001",
+        //     "INVALID_IBAN!!!",
+        //     100.00,
+        //     "2026-03-25"
+        // );
 
     } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << "\n";
+        std::cerr << e.what() << "\n";
     }
 
     return 0;

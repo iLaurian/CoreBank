@@ -5,15 +5,17 @@
 #include <stdexcept>
 
 std::string Transaction::generateUniqueId() {
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    static std::uniform_int_distribution<> dis(0, 15);
-
-    std::stringstream ss;
-    for (int i = 0; i < 8; ++i) {
-        ss << std::hex << dis(gen);
-    }
-    return ss.str();
+    // static std::random_device rd;
+    // static std::mt19937 gen(rd());
+    // static std::uniform_int_distribution<> dis(0, 15);
+    //
+    // std::stringstream ss;
+    // for (int i = 0; i < 8; ++i) {
+    //     ss << std::hex << dis(gen);
+    // }
+    // return ss.str();
+    static int counter = 100000;
+    return std::to_string(++counter);
 }
 
 void Transaction::validateTransactionLogic(TransactionType type, const std::string& srcIBAN, const std::string& tgtIBAN) {

@@ -1,5 +1,4 @@
 #include "BankAccount.h"
-
 #include "../utils/Validator.h"
 
 BankAccount::BankAccount(const std::string& iban, double initialBalance, const Currency curr)
@@ -28,6 +27,7 @@ BankAccount& BankAccount::operator=(const BankAccount& other) {
     if (this != &other) {
         IBAN = other.IBAN;
         balance = other.balance;
+        currency = other.currency;
         transactionCount = other.transactionCount;
         transactionCapacity = other.transactionCapacity;
 
