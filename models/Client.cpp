@@ -1,4 +1,5 @@
 #include "Client.h"
+#include <algorithm>
 #include <cmath>
 #include "../utils/CurrencyConverter.h"
 
@@ -87,15 +88,16 @@ void Client::addBankAccount(BankAccount *account) {
 }
 
 void Client::removeBankAccount(const std::string &iban) {
-    for (auto it = accounts.begin(); it != accounts.end(); ++it) {
-        if ((*it)->getIBAN() == iban) {
-            delete *it;
-            accounts.erase(it);
-            updateCreditScore();
-            return;
-        }
+    const auto it = std::ranges::find_if(accounts, [&](const BankAccount *acc) {
+                return acc->getIBAN() == iban;
+    });
+
+    if (it == accounts.end()) {
+        throw std::invalid_argument("Account with IBAN " + iban + " not found.");
     }
-    throw std::invalid_argument("Account with IBAN " + iban + " not found.");
+
+    delete *it;
+    accounts.erase(it);
 }
 
 BankAccount* Client::getBankAccount(const std::string &iban) const {
@@ -104,7 +106,7 @@ BankAccount* Client::getBankAccount(const std::string &iban) const {
             return account;
         }
     }
-    throw std::invalid_argument("Account with IBAN " + iban + " not found.");
+    return nullptr;
 }
 
 double Client::calculateTotalNetWorth() const {
@@ -150,15 +152,13 @@ void Client::transferBetweenOwnAccounts(const std::string &fromIBAN, const std::
     BankAccount* source = getBankAccount(fromIBAN);
     BankAccount* target = getBankAccount(toIBAN);
 
+    if (!source || !target) {
+        return;
+    }
+
     source->processOutgoingTransfer(amount, toIBAN, dateStr);
     double convertedAmount = CurrencyConverter::convert(amount, source->getCurrency(), target->getCurrency());
     target->processIncomingTransfer(convertedAmount, fromIBAN, dateStr);
-}
-
-void Client::sendMoneyExternal(const std::string &fromOwnIBAN, const std::string &toExternalIBAN, double amount, const std::string &dateStr) {
-    BankAccount* source = getBankAccount(fromOwnIBAN);
-    source->processOutgoingTransfer(amount, toExternalIBAN, dateStr);
-    updateCreditScore();
 }
 
 std::ostream & operator<<(std::ostream &os, const Client &client) {

@@ -60,6 +60,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         models/Client.cpp
         utils/CurrencyConverter.h
         utils/CurrencyConverter.cpp
+        models/Bank.h
+        models/Bank.cpp
 )
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )
