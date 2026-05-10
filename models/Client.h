@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 #include "BankAccount.h"
 
 class Client {
@@ -10,14 +11,18 @@ class Client {
     std::string name;
     std::string address;
     double monthlyIncome;
-    int creditScore;
-    std::vector<BankAccount *> accounts;
+    std::vector<std::unique_ptr<BankAccount>> accounts;
 
-    void updateCreditScore();
+    int calculateCreditScore() const;
 
 public:
     Client(const std::string& cnp, const std::string& name, const std::string& address, double monthlyIncome);
     ~Client();
+
+    Client(const Client&) = delete;
+    Client& operator=(const Client&) = delete;
+    Client(Client&&) noexcept = default;
+    Client& operator=(Client&&) noexcept = default;
 
     const std::string& getCNP() const;
     const std::string& getName() const;
@@ -25,7 +30,7 @@ public:
     double getMonthlyIncome() const;
     int getCreditScore() const;
 
-    void addBankAccount(BankAccount* account);
+    void addBankAccount(std::unique_ptr<BankAccount> account);
     void removeBankAccount(const std::string& iban);
     BankAccount* getBankAccount(const std::string& iban) const;
 

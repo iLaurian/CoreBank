@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
 #include "Transaction.h"
 
 class BankAccount {
@@ -10,7 +11,7 @@ protected:
     std::string IBAN;
     double balance;
     Currency currency;
-    Transaction* transactions{};
+    std::vector<Transaction> transactions;
     int transactionCount;
     int transactionCapacity;
 
