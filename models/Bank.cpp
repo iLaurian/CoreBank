@@ -8,9 +8,6 @@ Bank::Bank(const std::string &name, const std::string &swiftCode)
 }
 
 Bank::~Bank() {
-    for (Client* client : clients) {
-        delete client;
-    }
     clients.clear();
 }
 
@@ -22,20 +19,20 @@ const std::string& Bank::getSwiftCode() const {
     return swiftCode;
 }
 
-void Bank::addClient(Client *client) {
+void Bank::addClient(std::unique_ptr<Client> client) {
     if (!client) return;
 
-    for (const Client *c : clients) {
+    for (const auto &c : clients) {
         if (c->getCNP() == client->getCNP()) {
             throw std::invalid_argument("Client with this CNP already exists in the bank.");
         }
     }
 
-    clients.push_back(client);
+    clients.push_back(std::move(client));
 }
 
 void Bank::removeClient(const std::string &cnp) {
-    const auto it = std::ranges::find_if(clients, [&](const Client *client) {
+    const auto it = std::ranges::find_if(clients, [&](const std::unique_ptr<Client> &client) {
                 return client->getCNP() == cnp;
     });
 
@@ -43,21 +40,20 @@ void Bank::removeClient(const std::string &cnp) {
         throw std::invalid_argument("Client with CNP " + cnp + " not found.");
     }
 
-    delete *it;
     clients.erase(it);
 }
 
 Client* Bank::getClient(const std::string &cnp) const {
-    for (Client* client : clients) {
+    for (const auto &client : clients) {
         if (client->getCNP() == cnp) {
-            return client;
+            return client.get();
         }
     }
     throw std::invalid_argument("Client not found.");
 }
 
 BankAccount *Bank::findAccountByIBAN(const std::string &iban) const {
-    for (const Client* client : clients) {
+    for (const auto &client : clients) {
         if (BankAccount* acc = client->getBankAccount(iban); acc != nullptr) {
             return acc;
         }
@@ -85,7 +81,7 @@ void Bank::processTransfer(const std::string &fromIBAN, const std::string &toIBA
 
 double Bank::calculateTotalBankAssets() const {
     double totalBankAssets = 0.0;
-    for (const Client* client : clients) {
+    for (const auto &client : clients) {
         totalBankAssets += client->calculateTotalNetWorth();
     }
     return totalBankAssets;
@@ -96,7 +92,7 @@ std::ostream& operator<<(std::ostream& os, const Bank& bank) {
        << "TOTAL ASSETS: " << bank.calculateTotalBankAssets() << " USD\n"
        << "TOTAL CLIENTS: " << bank.clients.size() << "\n";
 
-    for (const Client* client : bank.clients) {
+    for (const auto &client : bank.clients) {
         os << *client << "\n";
     }
 

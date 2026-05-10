@@ -1,26 +1,22 @@
 #include "BankAccount.h"
 #include "../utils/Validator.h"
 
+BankAccount::~BankAccount() = default;
+
 BankAccount::BankAccount(const std::string& iban, double initialBalance, const Currency curr)
     : IBAN(iban), balance(initialBalance), currency(curr), transactionCount(0), transactionCapacity(100) {
 
     Validator::validateIBAN(iban);
     Validator::validateAmount(initialBalance);
 
-    transactions = new Transaction[transactionCapacity];
-}
-
-BankAccount::~BankAccount() {
-    delete[] transactions;
+    transactions.reserve(transactionCapacity);
 }
 
 BankAccount::BankAccount(const BankAccount& other)
-    : IBAN(other.IBAN), balance(other.balance), currency(other.currency), transactionCount(other.transactionCount), transactionCapacity(other.transactionCapacity) {
+    : IBAN(other.IBAN), balance(other.balance), currency(other.currency), transactions(other.transactions),
+      transactionCount(other.transactionCount), transactionCapacity(other.transactionCapacity) {
 
-    transactions = new Transaction[transactionCapacity];
-    for (int i = 0; i < transactionCount; ++i) {
-        transactions[i] = other.transactions[i];
-    }
+    transactions.reserve(transactionCapacity);
 }
 
 BankAccount& BankAccount::operator=(const BankAccount& other) {
@@ -28,26 +24,17 @@ BankAccount& BankAccount::operator=(const BankAccount& other) {
         IBAN = other.IBAN;
         balance = other.balance;
         currency = other.currency;
-        transactionCount = other.transactionCount;
+        transactions = other.transactions;
         transactionCapacity = other.transactionCapacity;
-
-        delete[] transactions;
-        transactions = new Transaction[transactionCapacity];
-        for (int i = 0; i < transactionCount; ++i) {
-            transactions[i] = other.transactions[i];
-        }
+        transactions.reserve(transactionCapacity);
+        transactionCount = other.transactionCount;
     }
     return *this;
 }
 
 void BankAccount::resizeTransactions() {
     transactionCapacity *= 2;
-    Transaction* tempArray = new Transaction[transactionCapacity];
-    for (int i = 0; i < transactionCount; ++i) {
-        tempArray[i] = transactions[i];
-    }
-    delete[] transactions;
-    transactions = tempArray;
+    transactions.reserve(transactionCapacity);
 }
 
 const std::string& BankAccount::getIBAN() const {
@@ -70,14 +57,15 @@ void BankAccount::addTransaction(const Transaction& t) {
     if (transactionCount >= transactionCapacity) {
         resizeTransactions();
     }
-    transactions[transactionCount++] = t;
+    transactions.push_back(t);
+    ++transactionCount;
 }
 
 const Transaction& BankAccount::getTransaction(int index) const {
     if (index < 0 || index >= transactionCount) {
         throw std::out_of_range("Transaction index out of range");
     }
-    return transactions[index];
+    return transactions[static_cast<size_t>(index)];
 }
 
 void BankAccount::processDeposit(double amount, const std::string& dateStr) {
@@ -117,7 +105,7 @@ std::ostream& operator<<(std::ostream& os, const BankAccount& account) {
        << ", Transactions: " << account.transactionCount << ")" << "\n";
 
     for (int i = 0; i < account.transactionCount; ++i) {
-        os << "  " << account.transactions[i] << "\n";
+        os << "  " << account.transactions[static_cast<size_t>(i)] << "\n";
     }
 
     return os;

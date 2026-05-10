@@ -4,21 +4,27 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <memory>
 #include "Client.h"
 
 class Bank {
     std::string name;
     std::string swiftCode;
-    std::vector<Client*> clients;
+    std::vector<std::unique_ptr<Client>> clients;
 
 public:
     Bank(const std::string& name, const std::string& swiftCode);
     ~Bank();
 
+    Bank(const Bank&) = delete;
+    Bank& operator=(const Bank&) = delete;
+    Bank(Bank&&) noexcept = default;
+    Bank& operator=(Bank&&) noexcept = default;
+
     const std::string& getName() const;
     const std::string& getSwiftCode() const;
 
-    void addClient(Client* client);
+    void addClient(std::unique_ptr<Client> client);
     void removeClient(const std::string& cnp);
     Client* getClient(const std::string& cnp) const;
 

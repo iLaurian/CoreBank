@@ -4,18 +4,14 @@
 #include "../utils/CurrencyConverter.h"
 
 Client::Client(const std::string &cnp, const std::string &name, const std::string &address, double monthlyIncome)
-    : cnp(cnp), name(name), address(address), monthlyIncome(monthlyIncome), creditScore(300) {
-    updateCreditScore();
+    : cnp(cnp), name(name), address(address), monthlyIncome(monthlyIncome) {
 }
 
 Client::~Client() {
-    for (BankAccount* acc : accounts) {
-        delete acc;
-    }
     accounts.clear();
 }
 
-void Client::updateCreditScore() {
+int Client::calculateCreditScore() const {
     int baseScore = 300;
 
     int incomeFactor = std::min(300, static_cast<int>(monthlyIncome / 25));
@@ -24,7 +20,7 @@ void Client::updateCreditScore() {
     int netWorthFactor = std::min(200, static_cast<int>(netWorth / 50));
 
     int validExternalTransactions = 0;
-    for (const BankAccount* acc : accounts) {
+    for (const auto &acc : accounts) {
         for (int i = 0; i < acc->getTransactionCount(); ++i) {
             const Transaction& t = acc->getTransaction(i);
 
@@ -32,7 +28,7 @@ void Client::updateCreditScore() {
                 std::string otherIBAN = (t.getSourceIBAN() == acc->getIBAN()) ? t.getTargetIBAN() : t.getSourceIBAN();
 
                 bool isInternalTransfer = false;
-                for (const BankAccount* innerAcc : accounts) {
+                for (const auto &innerAcc : accounts) {
                     if (innerAcc->getIBAN() == otherIBAN) {
                         isInternalTransfer = true;
                         break;
@@ -51,7 +47,7 @@ void Client::updateCreditScore() {
 
     int activityFactor = std::min(50, validExternalTransactions * 2);
 
-    creditScore = baseScore + incomeFactor + netWorthFactor + activityFactor;
+    return baseScore + incomeFactor + netWorthFactor + activityFactor;
 }
 
 const std::string & Client::getCNP() const {
@@ -71,24 +67,23 @@ double Client::getMonthlyIncome() const {
 }
 
 int Client::getCreditScore() const {
-    return creditScore;
+    return calculateCreditScore();
 }
 
-void Client::addBankAccount(BankAccount *account) {
+void Client::addBankAccount(std::unique_ptr<BankAccount> account) {
     if (!account) return;
 
-    for (const BankAccount *acc : accounts) {
+    for (const auto &acc : accounts) {
         if (acc->getIBAN() == account->getIBAN()) {
             return;
         }
     }
 
-    accounts.push_back(account);
-    updateCreditScore();
+    accounts.push_back(std::move(account));
 }
 
 void Client::removeBankAccount(const std::string &iban) {
-    const auto it = std::ranges::find_if(accounts, [&](const BankAccount *acc) {
+    const auto it = std::ranges::find_if(accounts, [&](const std::unique_ptr<BankAccount> &acc) {
                 return acc->getIBAN() == iban;
     });
 
@@ -96,14 +91,13 @@ void Client::removeBankAccount(const std::string &iban) {
         throw std::invalid_argument("Account with IBAN " + iban + " not found.");
     }
 
-    delete *it;
     accounts.erase(it);
 }
 
 BankAccount* Client::getBankAccount(const std::string &iban) const {
-    for (const auto account : accounts) {
+    for (const auto &account : accounts) {
         if (account->getIBAN() == iban) {
-            return account;
+            return account.get();
         }
     }
     return nullptr;
@@ -111,19 +105,20 @@ BankAccount* Client::getBankAccount(const std::string &iban) const {
 
 double Client::calculateTotalNetWorth() const {
     double totalUSD = 0;
-    for (const BankAccount *acc : accounts) {
+    for (const auto &acc : accounts) {
         totalUSD += CurrencyConverter::convert(acc->getBalance(), acc->getCurrency(), USD);
     }
     return totalUSD;
 }
 
 void Client::evaluateLoanEligibility(double loanAmount, int months) const {
-    if (creditScore < 500) {
+    const int score = getCreditScore();
+    if (score < 500) {
         std::cout << "Loan denied: Credit score too low.\n";
         return;
     }
 
-    double annualInterestRate = 0.12 - ((creditScore - 500) * 0.0002);
+    double annualInterestRate = 0.12 - ((score - 500) * 0.0002);
     if (annualInterestRate < 0.04) annualInterestRate = 0.04;
 
     const double monthlyInterestRate = annualInterestRate / 12;
@@ -164,10 +159,10 @@ void Client::transferBetweenOwnAccounts(const std::string &fromIBAN, const std::
 std::ostream & operator<<(std::ostream &os, const Client &client) {
     os << "Client(Name: " << client.name << ", CNP: " << client.cnp
        << ", Address: " << client.address << ", Monthly Income: " << client.monthlyIncome
-       << ", Credit Score: " << client.creditScore << ")\n";
+       << ", Credit Score: " << client.getCreditScore() << ")\n";
 
     os << "Bank Accounts:\n";
-    for (const BankAccount* acc : client.accounts) {
+    for (const auto &acc : client.accounts) {
         os << *acc << "\n";
     }
 
