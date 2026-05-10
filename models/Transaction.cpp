@@ -34,6 +34,10 @@ void Transaction::validateTransactionLogic(TransactionType type, const std::stri
             throw std::invalid_argument("Source and target IBAN cannot be the same for TRANSFER or PAYMENT");
         }
     }
+    if (type == INTEREST) {
+        if (srcIBAN != "BANK") throw std::invalid_argument("INTEREST transactions must have source IBAN as 'BANK'");
+        Validator::validateIBAN(tgtIBAN);
+    }
 }
 
 Transaction::Transaction(const TransactionType tType, Currency curr,
@@ -61,6 +65,7 @@ std::string Transaction::getType() const {
         case WITHDRAWAL: return "WITHDRAWAL";
         case TRANSFER: return "TRANSFER";
         case PAYMENT: return "PAYMENT";
+        case INTEREST: return "INTEREST";
         default: return "UNKNOWN";
     }
 }

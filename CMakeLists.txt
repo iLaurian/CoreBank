@@ -54,14 +54,24 @@ add_executable(${MAIN_EXECUTABLE_NAME}
     models/Transaction.cpp
     models/BankAccount.cpp
     models/BankAccount.h
+    models/PersonalAccount.h
+    models/PersonalAccount.cpp
+    models/SavingsAccount.h
+    models/SavingsAccount.cpp
+    models/RetirementAccount.h
+    models/RetirementAccount.cpp
+    utils/DateUtils.h
+    utils/DateUtils.cpp
+    utils/InterestAccrual.h
+    utils/InterestAccrual.cpp
     utils/Validator.h
     utils/Validator.cpp
-        models/Client.h
-        models/Client.cpp
-        utils/CurrencyConverter.h
-        utils/CurrencyConverter.cpp
-        models/Bank.h
-        models/Bank.cpp
+    models/Client.h
+    models/Client.cpp
+    utils/CurrencyConverter.h
+    utils/CurrencyConverter.cpp
+    models/Bank.h
+    models/Bank.cpp
 )
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )

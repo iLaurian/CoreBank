@@ -4,6 +4,9 @@
 #include "models/Bank.h"
 #include "models/Client.h"
 #include "models/BankAccount.h"
+#include "models/PersonalAccount.h"
+#include "models/SavingsAccount.h"
+#include "models/RetirementAccount.h"
 
 int main() {
     try {
@@ -16,11 +19,11 @@ int main() {
 
         auto dummyClient = std::make_unique<Client>("0000000000000", "Dummy", "Nowhere", 1000.00);
 
-        auto acc1_usd = std::make_unique<BankAccount>("RO12CBIN000000000001", 1500.00, USD);
-        auto acc2_eur = std::make_unique<BankAccount>("RO12CBIN000000000002", 500.00, EUR);
-        auto acc3_gbp = std::make_unique<BankAccount>("RO12CBIN000000000003", 2000.00, GBP);
+        auto acc1_usd = std::make_unique<PersonalAccount>("RO12CBIN000000000001", 1500.00, USD);
+        auto acc2_eur = std::make_unique<SavingsAccount>("RO12CBIN000000000002", 500.00, EUR);
+        auto acc3_gbp = std::make_unique<RetirementAccount>("RO12CBIN000000000003", 2000.00, GBP, "2030-01-01");
 
-        auto acc_dummy = std::make_unique<BankAccount>("RO12CBIN999999999999", 100.00, USD);
+        auto acc_dummy = std::make_unique<SavingsAccount>("RO12CBIN999999999999", 100.00, USD);
 
         client1->addBankAccount(std::move(acc1_usd));
         client1->addBankAccount(std::move(acc2_eur));
@@ -41,6 +44,9 @@ int main() {
         if (acc1_usd_ptr) {
             acc1_usd_ptr->processDeposit(300.00, "2026-03-22");
             acc1_usd_ptr->processWithdrawal(50.00, "2026-03-22");
+
+            auto clonedAccount = acc1_usd_ptr->clone();
+            std::cout << *clonedAccount;
         }
 
         retrievedClient->transferBetweenOwnAccounts(
@@ -71,9 +77,14 @@ int main() {
             "2026-03-22"
         );
 
+        retrievedClient->applyInterestIfDue("2026-04-21");
+
+        retrievedClient->closeSavingsAccount("RO12CBIN999999999999", "RO12CBIN000000000001", "2026-04-01");
+
+        retrievedClient->removeBankAccount("RO12CBIN000000000002");
+
         retrievedClient->evaluateLoanEligibility(15000.00, 60);
 
-        retrievedClient->removeBankAccount("RO12CBIN999999999999");
         myBank.removeClient("0000000000000");
 
         std::cout << myBank;

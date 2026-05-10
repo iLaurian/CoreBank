@@ -1,20 +1,29 @@
 #include "BankAccount.h"
+#include <memory>
 #include "../utils/Validator.h"
+#include "../utils/DateUtils.h"
 
 BankAccount::~BankAccount() = default;
 
-BankAccount::BankAccount(const std::string& iban, double initialBalance, const Currency curr)
-    : IBAN(iban), balance(initialBalance), currency(curr), transactionCount(0), transactionCapacity(100) {
+std::unique_ptr<BankAccount> BankAccount::clone() const {
+    return std::make_unique<BankAccount>(*this);
+}
+
+BankAccount::BankAccount(const std::string& iban, double initialBalance, const Currency curr, const std::string& inception)
+    : IBAN(iban), balance(initialBalance), currency(curr),
+      inceptionDate(inception.empty() ? getCurrentDate() : inception),
+      transactionCount(0), transactionCapacity(100) {
 
     Validator::validateIBAN(iban);
     Validator::validateAmount(initialBalance);
+    Validator::validateDate(inceptionDate);
 
     transactions.reserve(transactionCapacity);
 }
 
 BankAccount::BankAccount(const BankAccount& other)
-    : IBAN(other.IBAN), balance(other.balance), currency(other.currency), transactions(other.transactions),
-      transactionCount(other.transactionCount), transactionCapacity(other.transactionCapacity) {
+    : IBAN(other.IBAN), balance(other.balance), currency(other.currency), inceptionDate(other.inceptionDate),
+      transactions(other.transactions), transactionCount(other.transactionCount), transactionCapacity(other.transactionCapacity) {
 
     transactions.reserve(transactionCapacity);
 }
@@ -24,6 +33,7 @@ BankAccount& BankAccount::operator=(const BankAccount& other) {
         IBAN = other.IBAN;
         balance = other.balance;
         currency = other.currency;
+        inceptionDate = other.inceptionDate;
         transactions = other.transactions;
         transactionCapacity = other.transactionCapacity;
         transactions.reserve(transactionCapacity);
@@ -35,6 +45,10 @@ BankAccount& BankAccount::operator=(const BankAccount& other) {
 void BankAccount::resizeTransactions() {
     transactionCapacity *= 2;
     transactions.reserve(transactionCapacity);
+}
+
+void BankAccount::printDetails(std::ostream& os) const {
+    os << "BankAccount";
 }
 
 const std::string& BankAccount::getIBAN() const {
@@ -51,6 +65,10 @@ int BankAccount::getTransactionCount() const {
 
 Currency BankAccount::getCurrency() const {
     return currency;
+}
+
+const std::string& BankAccount::getInceptionDate() const {
+    return inceptionDate;
 }
 
 void BankAccount::addTransaction(const Transaction& t) {
@@ -101,7 +119,8 @@ void BankAccount::processIncomingTransfer(double amount, const std::string& from
 }
 
 std::ostream& operator<<(std::ostream& os, const BankAccount& account) {
-    os << "BankAccount(IBAN: " << account.IBAN << ", Balance: " << account.balance
+    account.printDetails(os);
+    os << "(IBAN: " << account.IBAN << ", Balance: " << account.balance
        << ", Transactions: " << account.transactionCount << ")" << "\n";
 
     for (int i = 0; i < account.transactionCount; ++i) {

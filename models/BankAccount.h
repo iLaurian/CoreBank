@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <memory>
 #include "Transaction.h"
 
 class BankAccount {
@@ -11,23 +12,27 @@ protected:
     std::string IBAN;
     double balance;
     Currency currency;
+    std::string inceptionDate;
     std::vector<Transaction> transactions;
     int transactionCount;
     int transactionCapacity;
 
     void resizeTransactions();
+    virtual void printDetails(std::ostream& os) const;
 
 public:
-    BankAccount(const std::string& iban, double initialBalance, Currency curr = USD);
+    BankAccount(const std::string& iban, double initialBalance, Currency curr = USD, const std::string& inceptionDate = "");
     BankAccount(const BankAccount& other);
     BankAccount& operator=(const BankAccount& other);
     virtual ~BankAccount();
+    virtual std::unique_ptr<BankAccount> clone() const;
 
     const std::string& getIBAN() const;
     double getBalance() const;
     int getTransactionCount() const;
     Currency getCurrency() const;
     const Transaction& getTransaction(int index) const;
+    const std::string& getInceptionDate() const;
 
     virtual void addTransaction(const Transaction& t);
     virtual void processDeposit(double amount, const std::string& dateStr);

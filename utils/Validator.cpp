@@ -1,6 +1,7 @@
 #include "Validator.h"
 #include <stdexcept>
 #include <cctype>
+#include "DateUtils.h"
 
 namespace Validator {
     void validateIBAN(const std::string& iban) {
@@ -21,7 +22,7 @@ namespace Validator {
     }
 
     void validateDate(const std::string& dateStr) {
-        if (dateStr.size() != 10 || dateStr[4] != '-' || dateStr[7] != '-') {
+        if (!isValidDate(dateStr)) {
             throw std::invalid_argument("Invalid date format: " + dateStr);
         }
     }
