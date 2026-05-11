@@ -3,6 +3,7 @@
 #include "../utils/DateUtils.h"
 #include "../utils/CurrencyConverter.h"
 #include "../utils/InterestAccrual.h"
+#include "../utils/Logger.h"
 
 SavingsAccount::SavingsAccount(const std::string& iban, double initialBalance, Currency curr, const std::string& inceptionDate)
     : BankAccount(iban, initialBalance, curr, inceptionDate), lastInterestDate(getInceptionDate()) {
@@ -12,26 +13,30 @@ std::unique_ptr<BankAccount> SavingsAccount::clone() const {
     return std::make_unique<SavingsAccount>(*this);
 }
 
-void SavingsAccount::processWithdrawal(double amount, const std::string& dateStr) {
+bool SavingsAccount::processWithdrawal(double amount, const std::string& dateStr) {
     if (amount > balance) {
-        throw std::invalid_argument("Insufficient funds for withdrawal");
+        Logger::error("Savings withdrawal failed due to insufficient funds: " + IBAN);
+        return false;
     }
     if (balance - amount < MinimumBalance) {
-        throw std::invalid_argument("Savings account must maintain a minimum balance");
+        Logger::error("Savings withdrawal failed due to minimum balance: " + IBAN);
+        return false;
     }
 
-    BankAccount::processWithdrawal(amount, dateStr);
+    return BankAccount::processWithdrawal(amount, dateStr);
 }
 
-void SavingsAccount::processOutgoingTransfer(double amount, const std::string& toIBAN, const std::string& dateStr) {
+bool SavingsAccount::processOutgoingTransfer(double amount, const std::string& toIBAN, const std::string& dateStr) {
     if (amount > balance) {
-        throw std::invalid_argument("Insufficient funds for transfer");
+        Logger::error("Savings transfer failed due to insufficient funds: " + IBAN + " -> " + toIBAN);
+        return false;
     }
     if (balance - amount < MinimumBalance) {
-        throw std::invalid_argument("Savings account must maintain a minimum balance");
+        Logger::error("Savings transfer failed due to minimum balance: " + IBAN + " -> " + toIBAN);
+        return false;
     }
 
-    BankAccount::processOutgoingTransfer(amount, toIBAN, dateStr);
+    return BankAccount::processOutgoingTransfer(amount, toIBAN, dateStr);
 }
 
 double SavingsAccount::calculateAccruedInterest(const std::string& upToDate) const {

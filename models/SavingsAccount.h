@@ -9,8 +9,8 @@ public:
 
     SavingsAccount(const std::string& iban, double initialBalance, Currency curr = USD, const std::string& inceptionDate = "");
     std::unique_ptr<BankAccount> clone() const override;
-    void processWithdrawal(double amount, const std::string& dateStr) override;
-    void processOutgoingTransfer(double amount, const std::string& toIBAN, const std::string& dateStr) override;
+    bool processWithdrawal(double amount, const std::string& dateStr) override;
+    bool processOutgoingTransfer(double amount, const std::string& toIBAN, const std::string& dateStr) override;
     void applyInterestIfDue(const std::string& dateStr);
     void closeAndTransferTo(BankAccount& target, const std::string& dateStr);
 

@@ -4,6 +4,7 @@
 #include <cmath>
 #include "../utils/CurrencyConverter.h"
 #include "../utils/DateUtils.h"
+#include "../utils/Logger.h"
 
 namespace {
     std::string g_bankName;
@@ -19,6 +20,7 @@ void Bank::initialize(const std::string& bankName, const std::string& bankSwiftC
     g_bankName = bankName;
     g_bankSwift = bankSwiftCode;
     g_bankInitialized = true;
+    Logger::info("Bank initialized: " + bankName + " (" + bankSwiftCode + ")");
 }
 
 Bank& Bank::instance() {
@@ -44,6 +46,7 @@ const std::string& Bank::getSwiftCode() const {
 Client* Bank::registerClient(const std::string& cnp, const std::string& clientName, const std::string& clientAddress, double monthlyIncome) {
     for (const auto &c : clients) {
         if (c->getCNP() == cnp) {
+            Logger::error("Client registration failed: duplicate CNP " + cnp);
             throw std::invalid_argument("Client with this CNP already exists in the bank.");
         }
     }
@@ -51,6 +54,7 @@ Client* Bank::registerClient(const std::string& cnp, const std::string& clientNa
     auto client = std::make_unique<Client>(cnp, clientName, clientAddress, monthlyIncome);
     Client* stored = client.get();
     clients.push_back(std::move(client));
+    Logger::info("Client registered: " + cnp + " " + clientName);
     return stored;
 }
 
@@ -60,10 +64,12 @@ void Bank::removeClient(const std::string &cnp) {
     });
 
     if (it == clients.end()) {
+        Logger::error("Client removal failed: CNP not found " + cnp);
         throw std::invalid_argument("Client with CNP " + cnp + " not found.");
     }
 
     clients.erase(it);
+    Logger::info("Client removed: " + cnp);
 }
 
 Client* Bank::getClient(const std::string &cnp) const {
@@ -72,6 +78,7 @@ Client* Bank::getClient(const std::string &cnp) const {
             return client.get();
         }
     }
+    Logger::error("Client lookup failed: CNP not found " + cnp);
     throw std::invalid_argument("Client not found.");
 }
 
@@ -81,24 +88,32 @@ BankAccount *Bank::findAccountByIBAN(const std::string &iban) const {
             return acc;
         }
     }
+    Logger::warn("Account not found in bank for IBAN: " + iban);
     return nullptr;
 }
 
 void Bank::processTransfer(const std::string &fromIBAN, const std::string &toIBAN, double amount, const std::string &dateStr) {
     if (fromIBAN == toIBAN) {
-        throw std::invalid_argument("Source and target IBAN cannot be the same.");
+        Logger::error("Transfer failed: same IBAN " + fromIBAN);
+        return;
     }
 
     BankAccount *sourceAccount = findAccountByIBAN(fromIBAN);
     if (!sourceAccount) {
+        Logger::error("Transfer failed: source account not found " + fromIBAN);
         return;
     }
-    sourceAccount->processOutgoingTransfer(amount, toIBAN, dateStr);
+    if (!sourceAccount->processOutgoingTransfer(amount, toIBAN, dateStr)) {
+        return;
+    }
 
     BankAccount *targetAccount = findAccountByIBAN(toIBAN);
     if (targetAccount) {
         double convertedAmount = CurrencyConverter::convert(amount, sourceAccount->getCurrency(), targetAccount->getCurrency());
         targetAccount->processIncomingTransfer(convertedAmount, fromIBAN, dateStr);
+        Logger::info("Transfer completed: " + fromIBAN + " -> " + toIBAN);
+    } else {
+        Logger::warn("Transfer target account not found (external): " + toIBAN);
     }
 }
 
@@ -122,14 +137,17 @@ bool Bank::isClientRegistered(const Client* client) const {
 
 LoanRequestResult Bank::evaluateLoanRequest(const Client& client, double amount, int months) const {
     if (!isClientRegistered(&client)) {
+        Logger::error("Loan evaluation failed: client not registered");
         return {false, "Client not registered with this bank.", std::nullopt};
     }
     if (amount <= 0 || months <= 0) {
+        Logger::error("Loan evaluation failed: invalid parameters");
         return {false, "Invalid loan parameters.", std::nullopt};
     }
 
     const int score = client.getCreditScore();
     if (score < 500) {
+        Logger::warn("Loan evaluation denied: credit score too low");
         return {false, "Credit score too low.", std::nullopt};
     }
 
@@ -139,6 +157,7 @@ LoanRequestResult Bank::evaluateLoanRequest(const Client& client, double amount,
     const double monthlyPayment = calculateMonthlyPayment(amount, annualInterestRate, months);
     const double maxAllowedPayment = client.getMonthlyIncome() * 0.4;
     if (monthlyPayment > maxAllowedPayment) {
+        Logger::warn("Loan evaluation denied: payment exceeds income threshold");
         return {false, "Monthly payment exceeds 40% of monthly income.", std::nullopt};
     }
 
@@ -151,6 +170,8 @@ LoanRequestResult Bank::evaluateLoanRequest(const Client& client, double amount,
     loan.remainingBalance = amount;
     loan.status = ACTIVE;
     loan.missedPayments = 0;
+
+    Logger::info("Loan evaluation approved for amount " + std::to_string(amount));
 
     return {true, "Approved.", loan};
 }
@@ -170,6 +191,7 @@ void Bank::applyMonthlyLoanPayments(const std::string& dateStr) {
                 loan.status = OVERDUE;
                 loan.missedPayments++;
                 loan.nextDueDate = addMonths(loan.nextDueDate, 1);
+                Logger::warn("Loan payment missed: source account not found for loan " + loan.id);
                 continue;
             }
 
@@ -178,6 +200,7 @@ void Bank::applyMonthlyLoanPayments(const std::string& dateStr) {
                 loan.status = OVERDUE;
                 loan.missedPayments++;
                 loan.nextDueDate = addMonths(loan.nextDueDate, 1);
+                Logger::warn("Loan payment missed: insufficient funds for loan " + loan.id);
                 continue;
             }
 
@@ -192,12 +215,14 @@ void Bank::applyMonthlyLoanPayments(const std::string& dateStr) {
             loan.nextDueDate = addMonths(loan.nextDueDate, 1);
         }
     }
+    Logger::info("Monthly loan payments processed for date: " + dateStr);
 }
 
 void Bank::applyMonthlyAccountFees(const std::string& dateStr) {
     for (const auto &client : clients) {
         client->applyMonthlyAccountFees(dateStr);
     }
+    Logger::info("Monthly account fees applied for date: " + dateStr);
 }
 
 double Bank::calculateTotalBankAssets() const {

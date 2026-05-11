@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include "../utils/DateUtils.h"
 #include "../utils/InterestAccrual.h"
+#include "../utils/Logger.h"
 
 RetirementAccount::RetirementAccount(const std::string& iban, double initialBalance, Currency curr, const std::string& maturityDate, const std::string& inceptionDate)
     : BankAccount(iban, initialBalance, curr, inceptionDate), maturityDate(maturityDate), lastInterestDate(getInceptionDate()) {
@@ -19,38 +20,40 @@ double RetirementAccount::calculateAccruedInterest(const std::string& upToDate) 
     return InterestAccrual::calculate(transactions, IBAN, lastInterestDate, upToDate, AnnualInterestRate, balance);
 }
 
-void RetirementAccount::processWithdrawal(double amount, const std::string& dateStr) {
+bool RetirementAccount::processWithdrawal(double amount, const std::string& dateStr) {
     if (amount > balance) {
-        throw std::invalid_argument("Insufficient funds for withdrawal");
+        Logger::error("Retirement withdrawal failed due to insufficient funds: " + IBAN);
+        return false;
     }
 
     if (!isMaturityReached(dateStr)) {
         const double penalty = amount * EarlyWithdrawalPenaltyRate;
         if (amount + penalty > balance) {
-            throw std::invalid_argument("Insufficient funds for retirement withdrawal penalty");
+            Logger::error("Retirement withdrawal failed due to penalty funds: " + IBAN);
+            return false;
         }
-        BankAccount::processWithdrawal(amount + penalty, dateStr);
-        return;
+        return BankAccount::processWithdrawal(amount + penalty, dateStr);
     }
 
-    BankAccount::processWithdrawal(amount, dateStr);
+    return BankAccount::processWithdrawal(amount, dateStr);
 }
 
-void RetirementAccount::processOutgoingTransfer(double amount, const std::string& toIBAN, const std::string& dateStr) {
+bool RetirementAccount::processOutgoingTransfer(double amount, const std::string& toIBAN, const std::string& dateStr) {
     if (amount > balance) {
-        throw std::invalid_argument("Insufficient funds for transfer");
+        Logger::error("Retirement transfer failed due to insufficient funds: " + IBAN + " -> " + toIBAN);
+        return false;
     }
 
     if (!isMaturityReached(dateStr)) {
         const double penalty = amount * EarlyWithdrawalPenaltyRate;
         if (amount + penalty > balance) {
-            throw std::invalid_argument("Insufficient funds for retirement transfer penalty");
+            Logger::error("Retirement transfer failed due to penalty funds: " + IBAN + " -> " + toIBAN);
+            return false;
         }
-        BankAccount::processOutgoingTransfer(amount + penalty, toIBAN, dateStr);
-        return;
+        return BankAccount::processOutgoingTransfer(amount + penalty, toIBAN, dateStr);
     }
 
-    BankAccount::processOutgoingTransfer(amount, toIBAN, dateStr);
+    return BankAccount::processOutgoingTransfer(amount, toIBAN, dateStr);
 }
 
 void RetirementAccount::applyInterestIfDue(const std::string& dateStr) {

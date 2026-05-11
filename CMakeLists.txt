@@ -68,6 +68,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
     utils/InterestAccrual.cpp
     utils/Validator.h
     utils/Validator.cpp
+    utils/Logger.h
+    utils/Logger.cpp
     models/Client.h
     models/Client.cpp
     utils/CurrencyConverter.h

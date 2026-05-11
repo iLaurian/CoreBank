@@ -4,6 +4,7 @@
 #include "Bank.h"
 #include "../utils/CurrencyConverter.h"
 #include "../utils/DateUtils.h"
+#include "../utils/Logger.h"
 #include "SavingsAccount.h"
 #include "RetirementAccount.h"
 
@@ -28,6 +29,7 @@ Client& Client::operator=(Client other) {
 
 Client::~Client() {
     accounts.clear();
+    Logger::info("Client destroyed: " + cnp);
 }
 
 void swap(Client& first, Client& second) noexcept {
@@ -104,23 +106,28 @@ void Client::addBankAccount(std::unique_ptr<BankAccount> account) {
 
     for (const auto &acc : accounts) {
         if (acc->getIBAN() == account->getIBAN()) {
+            Logger::warn("Duplicate account not added: " + account->getIBAN());
             return;
         }
     }
 
+    Logger::info("Account added to client: " + cnp + " IBAN=" + account->getIBAN());
     accounts.push_back(std::move(account));
 }
 
-void Client::removeBankAccount(const std::string &iban) {
+bool Client::removeBankAccount(const std::string &iban) {
     const auto it = std::ranges::find_if(accounts, [&](const std::unique_ptr<BankAccount> &acc) {
                 return acc->getIBAN() == iban;
     });
 
     if (it == accounts.end()) {
-        throw std::invalid_argument("Account with IBAN " + iban + " not found.");
+        Logger::error("Remove account failed, IBAN not found: " + iban);
+        return false;
     }
 
     accounts.erase(it);
+    Logger::info("Account removed: " + iban);
+    return true;
 }
 
 BankAccount* Client::getBankAccount(const std::string &iban) const {
@@ -129,6 +136,7 @@ BankAccount* Client::getBankAccount(const std::string &iban) const {
             return account.get();
         }
     }
+    Logger::warn("Account not found for IBAN: " + iban);
     return nullptr;
 }
 
@@ -143,19 +151,24 @@ double Client::calculateTotalNetWorth() const {
 
 void Client::transferBetweenOwnAccounts(const std::string &fromIBAN, const std::string &toIBAN, double amount, const std::string& dateStr) {
     if (fromIBAN == toIBAN) {
-        throw std::invalid_argument("Source and target IBAN cannot be the same.");
+        Logger::error("Transfer between own accounts failed: same IBAN " + fromIBAN);
+        return;
     }
 
     BankAccount* source = getBankAccount(fromIBAN);
     BankAccount* target = getBankAccount(toIBAN);
 
     if (!source || !target) {
+        Logger::error("Transfer between own accounts failed: account not found");
         return;
     }
 
-    source->processOutgoingTransfer(amount, toIBAN, dateStr);
+    if (!source->processOutgoingTransfer(amount, toIBAN, dateStr)) {
+        return;
+    }
     double convertedAmount = CurrencyConverter::convert(amount, source->getCurrency(), target->getCurrency());
     target->processIncomingTransfer(convertedAmount, fromIBAN, dateStr);
+    Logger::info("Transfer between own accounts: " + fromIBAN + " -> " + toIBAN);
 }
 
 const std::vector<Loan>& Client::getLoans() const {
@@ -166,14 +179,16 @@ std::vector<Loan>& Client::getLoans() {
     return loans;
 }
 
-void Client::closeSavingsAccount(const std::string& fromIBAN, const std::string& toIBAN, const std::string& dateStr) {
+bool Client::closeSavingsAccount(const std::string& fromIBAN, const std::string& toIBAN, const std::string& dateStr) {
     if (fromIBAN == toIBAN) {
-        throw std::invalid_argument("Source and target IBAN cannot be the same.");
+        Logger::error("Close savings failed: source and target IBAN match " + fromIBAN);
+        return false;
     }
 
     BankAccount* target = getBankAccount(toIBAN);
     if (!target) {
-        throw std::invalid_argument("Target account not found.");
+        Logger::error("Close savings failed: target account not found " + toIBAN);
+        return false;
     }
 
     const auto it = std::ranges::find_if(accounts, [&](const std::unique_ptr<BankAccount> &acc) {
@@ -181,17 +196,21 @@ void Client::closeSavingsAccount(const std::string& fromIBAN, const std::string&
     });
 
     if (it == accounts.end()) {
-        throw std::invalid_argument("Savings account not found.");
+        Logger::error("Close savings failed: savings account not found " + fromIBAN);
+        return false;
     }
 
     auto* savings = dynamic_cast<SavingsAccount*>(it->get());
     if (!savings) {
-        throw std::invalid_argument("Source account is not a savings account.");
+        Logger::error("Close savings failed: source not savings account " + fromIBAN);
+        return false;
     }
 
     savings->closeAndTransferTo(*target, dateStr);
 
     accounts.erase(it);
+    Logger::info("Savings account closed: " + fromIBAN + " -> " + toIBAN);
+    return true;
 }
 
 void Client::applyInterestIfDue(const std::string& dateStr) {
@@ -212,6 +231,7 @@ void Client::applyMonthlyAccountFees(const std::string& dateStr) {
             account->applyMonthlyFee(dateStr);
         }
     }
+    Logger::info("Client fees applied: " + cnp + " date=" + dateStr);
 }
 
 LoanRequestResult Client::requestLoan(double amount, int months, const std::string& dateStr, const std::string& targetIBAN) {
@@ -222,6 +242,7 @@ LoanRequestResult Client::requestLoan(double amount, int months, const std::stri
 
     BankAccount* target = getBankAccount(targetIBAN);
     if (!target) {
+        Logger::error("Loan request failed: target account not found " + targetIBAN);
         return {false, "Target account not found.", std::nullopt};
     }
 
@@ -233,6 +254,8 @@ LoanRequestResult Client::requestLoan(double amount, int months, const std::stri
 
     target->processDeposit(loan.principal, dateStr);
     loans.push_back(loan);
+
+    Logger::info("Loan issued: " + loan.id + " IBAN=" + targetIBAN);
 
     return {true, "Approved.", loan};
 }

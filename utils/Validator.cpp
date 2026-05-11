@@ -2,34 +2,44 @@
 #include <stdexcept>
 #include <cctype>
 #include "DateUtils.h"
+#include "Logger.h"
 
 namespace Validator {
-    void validateIBAN(const std::string& iban) {
+    bool validateIBAN(const std::string& iban) {
         if (iban.length() < 15 || iban.length() > 34) {
-            throw std::invalid_argument("Invalid IBAN length: " + iban);
+            Logger::error("Invalid IBAN length: " + iban);
+            return false;
         }
         if (!std::isalpha(iban[0]) || !std::isalpha(iban[1])) {
-            throw std::invalid_argument("IBAN must start with 2 letters: " + iban);
+            Logger::error("IBAN must start with 2 letters: " + iban);
+            return false;
         }
         if (!std::isdigit(iban[2]) || !std::isdigit(iban[3])) {
-            throw std::invalid_argument("IBAN characters 3 and 4 must be digits: " + iban);
+            Logger::error("IBAN characters 3 and 4 must be digits: " + iban);
+            return false;
         }
         for (const char c : iban) {
             if (!std::isalnum(c)) {
-                throw std::invalid_argument("IBAN contains invalid characters: " + iban);
+                Logger::error("IBAN contains invalid characters: " + iban);
+                return false;
             }
         }
+        return true;
     }
 
-    void validateDate(const std::string& dateStr) {
+    bool validateDate(const std::string& dateStr) {
         if (!isValidDate(dateStr)) {
-            throw std::invalid_argument("Invalid date format: " + dateStr);
+            Logger::error("Invalid date format: " + dateStr);
+            return false;
         }
+        return true;
     }
 
-    void validateAmount(const double amount) {
+    bool validateAmount(const double amount) {
         if (amount < 0) {
-            throw std::invalid_argument("Amount cannot be negative: " + std::to_string(amount));
+            Logger::error("Amount cannot be negative: " + std::to_string(amount));
+            return false;
         }
+        return true;
     }
 }

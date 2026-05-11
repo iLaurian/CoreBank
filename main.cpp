@@ -7,9 +7,13 @@
 #include "models/PersonalAccount.h"
 #include "models/SavingsAccount.h"
 #include "models/RetirementAccount.h"
+#include "utils/Logger.h"
 
 int main() {
     try {
+        Logger::init();
+        Logger::info("Application started");
+
         Bank::initialize("CoreBank International", "CBINTRO");
         Bank& myBank = Bank::instance();
 
@@ -93,6 +97,7 @@ int main() {
 
     } catch (const std::exception& e) {
         std::cerr << "EXCEPTION CAUGHT: " << e.what() << "\n";
+        Logger::error(std::string("Unhandled exception: ") + e.what());
     }
 
     return 0;

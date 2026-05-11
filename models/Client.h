@@ -36,12 +36,12 @@ public:
     int getCreditScore() const;
 
     void addBankAccount(std::unique_ptr<BankAccount> account);
-    void removeBankAccount(const std::string& iban);
+    bool removeBankAccount(const std::string& iban);
     BankAccount* getBankAccount(const std::string& iban) const;
 
     double calculateTotalNetWorth() const;
     void transferBetweenOwnAccounts(const std::string& fromIBAN, const std::string& toIBAN, double amount, const std::string& dateStr);
-    void closeSavingsAccount(const std::string& fromIBAN, const std::string& toIBAN, const std::string& dateStr);
+    bool closeSavingsAccount(const std::string& fromIBAN, const std::string& toIBAN, const std::string& dateStr);
     void applyInterestIfDue(const std::string& dateStr);
     void applyMonthlyAccountFees(const std::string& dateStr);
     LoanRequestResult requestLoan(double amount, int months, const std::string& dateStr, const std::string& targetIBAN);

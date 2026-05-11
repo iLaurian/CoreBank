@@ -1,4 +1,5 @@
 #include "CurrencyConverter.h"
+#include "Logger.h"
 
 namespace CurrencyConverter {
     double getRateToUSD(Currency curr) {
@@ -8,7 +9,9 @@ namespace CurrencyConverter {
             case GBP: return 1.33;
             case JPY: return 0.0063;
             case CHF: return 1.27;
-            default: throw std::invalid_argument("Unsupported currency");
+            default:
+                Logger::error("Unsupported currency conversion");
+                throw std::invalid_argument("Unsupported currency");
         }
     }
 

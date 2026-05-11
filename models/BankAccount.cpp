@@ -2,19 +2,24 @@
 #include <memory>
 #include "../utils/Validator.h"
 #include "../utils/DateUtils.h"
+#include "../utils/Logger.h"
 
-BankAccount::~BankAccount() = default;
+BankAccount::~BankAccount() {
+    Logger::info("Account destroyed: " + IBAN);
+}
 
 BankAccount::BankAccount(const std::string& iban, double initialBalance, const Currency curr, const std::string& inception)
     : IBAN(iban), balance(initialBalance), currency(curr),
       inceptionDate(inception.empty() ? getCurrentDate() : inception),
       transactionCount(0), transactionCapacity(100) {
 
-    Validator::validateIBAN(iban);
-    Validator::validateAmount(initialBalance);
-    Validator::validateDate(inceptionDate);
+    if (!Validator::validateIBAN(iban) || !Validator::validateAmount(initialBalance) || !Validator::validateDate(inceptionDate)) {
+        Logger::error("Account initialization failed for IBAN: " + iban);
+        throw std::invalid_argument("Invalid bank account initialization data");
+    }
 
     transactions.reserve(transactionCapacity);
+    Logger::info("Account created: " + IBAN);
 }
 
 BankAccount::BankAccount(const BankAccount& other)
@@ -22,6 +27,7 @@ BankAccount::BankAccount(const BankAccount& other)
       transactions(other.transactions), transactionCount(other.transactionCount), transactionCapacity(other.transactionCapacity) {
 
     transactions.reserve(transactionCapacity);
+    Logger::info("Account copied: " + IBAN);
 }
 
 BankAccount& BankAccount::operator=(const BankAccount& other) {
@@ -34,6 +40,7 @@ BankAccount& BankAccount::operator=(const BankAccount& other) {
         transactionCapacity = other.transactionCapacity;
         transactions.reserve(transactionCapacity);
         transactionCount = other.transactionCount;
+    Logger::info("Account copied: " + IBAN);
     }
     return *this;
 }
@@ -73,6 +80,7 @@ void BankAccount::addTransaction(const Transaction& t) {
     }
     transactions.push_back(t);
     ++transactionCount;
+    Logger::info("Transaction recorded for IBAN: " + IBAN);
 }
 
 const Transaction& BankAccount::getTransaction(int index) const {
@@ -84,12 +92,14 @@ const Transaction& BankAccount::getTransaction(int index) const {
 
 bool BankAccount::tryPay(double amount, const std::string& dateStr) {
     if (amount > balance) {
+        Logger::warn("Payment failed due to insufficient funds: " + IBAN);
         return false;
     }
 
     const Transaction t(PAYMENT, currency, dateStr, amount, IBAN, "BANK");
     balance -= amount;
     addTransaction(t);
+    Logger::info("Payment processed: " + IBAN + " amount=" + std::to_string(amount));
 
     return true;
 }
@@ -98,26 +108,33 @@ void BankAccount::processDeposit(double amount, const std::string& dateStr) {
     const Transaction t(DEPOSIT, currency, dateStr, amount, "ATM", IBAN);
     balance += amount;
     addTransaction(t);
+    Logger::info("Deposit processed: " + IBAN + " amount=" + std::to_string(amount));
 }
 
-void BankAccount::processWithdrawal(double amount, const std::string& dateStr) {
+bool BankAccount::processWithdrawal(double amount, const std::string& dateStr) {
     if (amount > balance) {
-        throw std::invalid_argument("Insufficient funds for withdrawal");
+        Logger::error("Withdrawal failed due to insufficient funds: " + IBAN);
+        return false;
     }
 
     const Transaction t(WITHDRAWAL, currency, dateStr, amount, IBAN, "ATM");
     balance -= amount;
     addTransaction(t);
+    Logger::info("Withdrawal processed: " + IBAN + " amount=" + std::to_string(amount));
+    return true;
 }
 
-void BankAccount::processOutgoingTransfer(double amount, const std::string &toIBAN, const std::string &dateStr) {
+bool BankAccount::processOutgoingTransfer(double amount, const std::string &toIBAN, const std::string &dateStr) {
     if (amount > balance) {
-        throw std::invalid_argument("Insufficient funds for transfer");
+        Logger::error("Outgoing transfer failed due to insufficient funds: " + IBAN + " -> " + toIBAN);
+        return false;
     }
 
     const Transaction t(TRANSFER, currency, dateStr, amount, IBAN, toIBAN);
     balance -= amount;
     addTransaction(t);
+    Logger::info("Outgoing transfer processed: " + IBAN + " -> " + toIBAN + " amount=" + std::to_string(amount));
+    return true;
 }
 
 void BankAccount::processIncomingTransfer(double amount, const std::string& fromIBAN, const std::string& dateStr) {
@@ -135,6 +152,7 @@ void BankAccount::applyMonthlyFee(const std::string& dateStr) {
     const Transaction t(FEE, currency, dateStr, fee, IBAN, "BANK");
     balance -= fee;
     addTransaction(t);
+    Logger::info("Monthly fee applied: " + IBAN + " fee=" + std::to_string(fee));
 }
 
 std::ostream& operator<<(std::ostream& os, const BankAccount& account) {
@@ -143,7 +161,7 @@ std::ostream& operator<<(std::ostream& os, const BankAccount& account) {
        << ", Transactions: " << account.transactionCount << ")" << "\n";
 
     for (int i = 0; i < account.transactionCount; ++i) {
-        os << "  " << account.transactions[static_cast<size_t>(i)] << "\n";
+        os << account.transactions[static_cast<size_t>(i)] << "\n";
     }
 
     return os;

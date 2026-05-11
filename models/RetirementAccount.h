@@ -9,8 +9,8 @@ public:
 
     RetirementAccount(const std::string& iban, double initialBalance, Currency curr, const std::string& maturityDate, const std::string& inceptionDate = "");
     std::unique_ptr<BankAccount> clone() const override;
-    void processWithdrawal(double amount, const std::string& dateStr) override;
-    void processOutgoingTransfer(double amount, const std::string& toIBAN, const std::string& dateStr) override;
+    bool processWithdrawal(double amount, const std::string& dateStr) override;
+    bool processOutgoingTransfer(double amount, const std::string& toIBAN, const std::string& dateStr) override;
     void applyInterestIfDue(const std::string& dateStr);
 
 protected:

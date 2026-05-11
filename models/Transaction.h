@@ -22,7 +22,7 @@ class Transaction {
     std::string targetIBAN;
 
     static std::string generateUniqueId();
-    static void validateTransactionLogic(TransactionType type, const std::string& srcIBAN, const std::string& tgtIBAN);
+    static bool validateTransactionLogic(TransactionType type, const std::string& srcIBAN, const std::string& tgtIBAN);
 
 public:
     Transaction() : amount(0), type(DEPOSIT), currency(USD) {}

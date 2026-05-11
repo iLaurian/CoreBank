@@ -38,8 +38,8 @@ public:
 
     virtual void addTransaction(const Transaction& t);
     virtual void processDeposit(double amount, const std::string& dateStr);
-    virtual void processWithdrawal(double amount, const std::string& dateStr);
-    virtual void processOutgoingTransfer(double amount, const std::string& toIBAN, const std::string& dateStr);
+    virtual bool processWithdrawal(double amount, const std::string& dateStr);
+    virtual bool processOutgoingTransfer(double amount, const std::string& toIBAN, const std::string& dateStr);
     virtual void processIncomingTransfer(double amount, const std::string& fromIBAN, const std::string& dateStr);
     void applyMonthlyFee(const std::string& dateStr);
 

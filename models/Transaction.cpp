@@ -1,5 +1,6 @@
 #include "Transaction.h"
 #include "../utils/Validator.h"
+#include "../utils/Logger.h"
 #include <random>
 #include <sstream>
 #include <stdexcept>
@@ -18,41 +19,66 @@ std::string Transaction::generateUniqueId() {
     return std::to_string(++counter);
 }
 
-void Transaction::validateTransactionLogic(TransactionType type, const std::string& srcIBAN, const std::string& tgtIBAN) {
+bool Transaction::validateTransactionLogic(TransactionType type, const std::string& srcIBAN, const std::string& tgtIBAN) {
     if (type == DEPOSIT) {
-        if (srcIBAN != "ATM") throw std::invalid_argument("DEPOSIT transactions must have source IBAN as 'ATM'");
-        Validator::validateIBAN(tgtIBAN);
+        if (srcIBAN != "ATM") {
+            Logger::error("DEPOSIT transactions must have source IBAN as 'ATM'");
+            return false;
+        }
+        return Validator::validateIBAN(tgtIBAN);
     }
     if (type == WITHDRAWAL) {
-        if (tgtIBAN != "ATM") throw std::invalid_argument("WITHDRAWAL transactions must have target IBAN as 'ATM'");
-        Validator::validateIBAN(srcIBAN);
+        if (tgtIBAN != "ATM") {
+            Logger::error("WITHDRAWAL transactions must have target IBAN as 'ATM'");
+            return false;
+        }
+        return Validator::validateIBAN(srcIBAN);
     }
     if (type == TRANSFER) {
-        Validator::validateIBAN(srcIBAN);
-        Validator::validateIBAN(tgtIBAN);
-        if (srcIBAN == tgtIBAN) {
-            throw std::invalid_argument("Source and target IBAN cannot be the same for TRANSFER or PAYMENT");
+        if (!Validator::validateIBAN(srcIBAN) || !Validator::validateIBAN(tgtIBAN)) {
+            return false;
         }
+        if (srcIBAN == tgtIBAN) {
+            Logger::error("Source and target IBAN cannot be the same for TRANSFER or PAYMENT");
+            return false;
+        }
+        return true;
     }
     if (type == PAYMENT) {
         if (srcIBAN != "BANK") {
-            Validator::validateIBAN(srcIBAN);
+            if (!Validator::validateIBAN(srcIBAN)) {
+                return false;
+            }
         }
         if (tgtIBAN != "BANK") {
-            Validator::validateIBAN(tgtIBAN);
+            if (!Validator::validateIBAN(tgtIBAN)) {
+                return false;
+            }
         }
         if (srcIBAN == tgtIBAN) {
-            throw std::invalid_argument("Source and target IBAN cannot be the same for TRANSFER or PAYMENT");
+            Logger::error("Source and target IBAN cannot be the same for TRANSFER or PAYMENT");
+            return false;
         }
+        return true;
     }
     if (type == INTEREST) {
-        if (srcIBAN != "BANK") throw std::invalid_argument("INTEREST transactions must have source IBAN as 'BANK'");
-        Validator::validateIBAN(tgtIBAN);
+        if (srcIBAN != "BANK") {
+            Logger::error("INTEREST transactions must have source IBAN as 'BANK'");
+            return false;
+        }
+        return Validator::validateIBAN(tgtIBAN);
     }
     if (type == FEE) {
-        Validator::validateIBAN(srcIBAN);
-        if (tgtIBAN != "BANK") throw std::invalid_argument("FEE transactions must have target IBAN as 'BANK'");
+        if (!Validator::validateIBAN(srcIBAN)) {
+            return false;
+        }
+        if (tgtIBAN != "BANK") {
+            Logger::error("FEE transactions must have target IBAN as 'BANK'");
+            return false;
+        }
+        return true;
     }
+    return false;
 }
 
 Transaction::Transaction(const TransactionType tType, Currency curr,
@@ -65,9 +91,14 @@ Transaction::Transaction(const TransactionType tType, Currency curr,
       currency(curr),
       sourceIBAN(srcIBAN),
       targetIBAN(tgtIBAN) {
-    Validator::validateDate(dateStr);
-    Validator::validateAmount(amt);
-    validateTransactionLogic(type, sourceIBAN, targetIBAN);
+    if (!Validator::validateDate(dateStr) || !Validator::validateAmount(amt)) {
+        throw std::invalid_argument("Invalid transaction data");
+    }
+    if (!validateTransactionLogic(type, sourceIBAN, targetIBAN)) {
+        throw std::invalid_argument("Invalid transaction logic");
+    }
+    Logger::info("Transaction created: " + getType() + " " + std::to_string(amount) +
+                 " " + getCurrency() + " From: " + sourceIBAN + " To: " + targetIBAN);
 }
 
 const std::string& Transaction::getId() const { return id; }

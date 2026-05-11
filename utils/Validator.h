@@ -4,9 +4,9 @@
 #include <string>
 
 namespace Validator {
-    void validateIBAN(const std::string& iban);
-    void validateDate(const std::string& dateStr);
-    void validateAmount(double amount);
+    bool validateIBAN(const std::string& iban);
+    bool validateDate(const std::string& dateStr);
+    bool validateAmount(double amount);
 }
 
 #endif
