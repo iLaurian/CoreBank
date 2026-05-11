@@ -77,5 +77,5 @@ void SavingsAccount::printDetails(std::ostream& os) const {
 }
 
 double SavingsAccount::calculateMonthlyFee() const {
-    return balance * 0.01;
+    return balance * 0.01 / 12.0;
 }

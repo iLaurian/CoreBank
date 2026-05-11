@@ -62,6 +62,7 @@ add_executable(${MAIN_EXECUTABLE_NAME}
     models/RetirementAccount.cpp
     models/Loan.h
     models/Loan.cpp
+    models/Bond.h
     utils/DateUtils.h
     utils/DateUtils.cpp
     utils/InterestAccrual.h
@@ -74,6 +75,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
     utils/Logger.cpp
     models/Client.h
     models/Client.cpp
+    models/InvestmentAccount.h
+    models/InvestmentAccount.cpp
     utils/CurrencyConverter.h
     utils/CurrencyConverter.cpp
     models/Bank.h

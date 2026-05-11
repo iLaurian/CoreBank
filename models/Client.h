@@ -49,6 +49,9 @@ public:
     std::vector<Loan>& getLoans();
     const std::vector<Loan>& getLoans() const;
 
+    std::vector<std::unique_ptr<BankAccount>>& getAccounts();
+    const std::vector<std::unique_ptr<BankAccount>>& getAccounts() const;
+
     friend void swap(Client& first, Client& second) noexcept;
     friend std::ostream& operator<< (std::ostream& os, const Client& client);
 };

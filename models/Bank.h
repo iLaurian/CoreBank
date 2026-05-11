@@ -39,6 +39,7 @@ public:
     void processTransfer(const std::string& fromIBAN, const std::string& toIBAN, double amount, const std::string& dateStr);
 
     void applyMonthlyAccountFees(const std::string& dateStr);
+    void applyAnnualBondCoupons(const std::string& dateStr);
     LoanRequestResult evaluateLoanRequest(const Client& client, double amount, int months) const;
     void applyMonthlyLoanPayments(const std::string& dateStr);
 

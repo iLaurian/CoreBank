@@ -6,6 +6,7 @@
 #include "../utils/DateUtils.h"
 #include "../utils/Logger.h"
 #include "../utils/BankExceptions.h"
+#include "InvestmentAccount.h"
 
 namespace {
     std::string g_bankName;
@@ -225,6 +226,57 @@ void Bank::applyMonthlyAccountFees(const std::string& dateStr) {
         client->applyMonthlyAccountFees(dateStr);
     }
     Logger::info("Monthly account fees applied for date: " + dateStr);
+}
+
+void Bank::applyAnnualBondCoupons(const std::string& dateStr) {
+    const DateParts current = parseDate(dateStr);
+    for (const auto &client : clients) {
+        for (auto &account : client->getAccounts()) {
+            auto* investment = dynamic_cast<InvestmentAccount*>(account.get());
+            if (!investment) {
+                continue;
+            }
+
+            auto& bonds = investment->getBonds();
+            for (size_t i = 0; i < bonds.size(); ) {
+                Bond& bond = bonds[i];
+                const DateParts maturity = parseDate(bond.maturityDate);
+                const DateParts issue = parseDate(bond.issueDate);
+
+                const bool matured = daysBetween(bond.maturityDate, dateStr) >= 0;
+                const bool couponAnniversary = current.month == maturity.month && current.day == maturity.day;
+                const bool inRange = daysBetween(bond.issueDate, dateStr) >= 0 && daysBetween(dateStr, bond.maturityDate) >= 0;
+                const bool afterIssueAnniversary = (current.year > issue.year) ||
+                    (current.year == issue.year &&
+                     (current.month > issue.month || (current.month == issue.month && current.day >= issue.day)));
+                const bool couponDue = couponAnniversary && inRange && afterIssueAnniversary && current.year > bond.lastCouponYear;
+
+                if (couponDue) {
+                    const double coupon = bond.annualCoupon();
+                    investment->creditInterest(coupon, dateStr);
+                    bond.lastCouponYear = current.year;
+                    Logger::info("Annual bond coupon paid: " + bond.id + " amount=" + std::to_string(coupon));
+                }
+
+                if (matured) {
+                    double payout = bond.faceValue;
+                    if (!couponDue && couponAnniversary && current.year > bond.lastCouponYear) {
+                        payout += bond.annualCoupon();
+                    }
+                    if (payout > bond.faceValue) {
+                        investment->creditInterest(payout - bond.faceValue, dateStr);
+                    }
+                    investment->creditPrincipal(bond.faceValue, dateStr);
+                    Logger::info("Bond matured: " + bond.id + " payout=" + std::to_string(payout));
+                    bonds.erase(bonds.begin() + static_cast<long long>(i));
+                    continue;
+                }
+
+                ++i;
+            }
+        }
+    }
+    Logger::info("Annual bond coupons processed for date: " + dateStr);
 }
 
 double Bank::calculateTotalBankAssets() const {

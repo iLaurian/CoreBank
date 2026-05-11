@@ -22,8 +22,8 @@ std::string Transaction::generateUniqueId() {
 
 bool Transaction::validateTransactionLogic(TransactionType type, const std::string& srcIBAN, const std::string& tgtIBAN) {
     if (type == DEPOSIT) {
-        if (srcIBAN != "ATM") {
-            Logger::error("DEPOSIT transactions must have source IBAN as 'ATM'");
+        if (srcIBAN != "ATM" && srcIBAN != "BANK") {
+            Logger::error("DEPOSIT transactions must have source IBAN as 'ATM' or 'BANK'");
             return false;
         }
         return Validator::validateIBAN(tgtIBAN);

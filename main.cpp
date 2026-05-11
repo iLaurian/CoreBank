@@ -7,6 +7,8 @@
 #include "models/PersonalAccount.h"
 #include "models/SavingsAccount.h"
 #include "models/RetirementAccount.h"
+#include "models/InvestmentAccount.h"
+#include "models/Bond.h"
 #include "utils/Logger.h"
 
 int main() {
@@ -26,12 +28,14 @@ int main() {
         auto acc1_usd = std::make_unique<PersonalAccount>("RO12CBIN000000000001", 1500.00, USD);
         auto acc2_eur = std::make_unique<SavingsAccount>("RO12CBIN000000000002", 500.00, EUR);
         auto acc3_gbp = std::make_unique<RetirementAccount>("RO12CBIN000000000003", 2000.00, GBP, "2030-01-01");
+        auto acc4_usd = std::make_unique<InvestmentAccount>("RO12CBIN000000000004", 3000.00, USD);
         auto acc_dummy = std::make_unique<SavingsAccount>("RO12CBIN999999999999", 100.00, USD);
 
         client1->addBankAccount(std::move(acc1_usd));
         client1->addBankAccount(std::move(acc2_eur));
         client1->addBankAccount(std::move(acc_dummy));
         client2->addBankAccount(std::move(acc3_gbp));
+        client2->addBankAccount(std::move(acc4_usd));
 
         Client* retrievedClient = myBank.getClient("1900101123456");
         std::cout << retrievedClient->getName() << "\n";
@@ -76,7 +80,14 @@ int main() {
             "2026-03-22"
         );
 
+        if (auto* investment = dynamic_cast<InvestmentAccount*>(client2->getBankAccount("RO12CBIN000000000004"))) {
+            Bond bond{"BND001", 1000.0, 0.04, "2026-01-01", "2027-03-22", USD, 0};
+            investment->addBond(bond, "2026-03-22");
+        }
+
         myBank.applyMonthlyAccountFees("2026-04-01");
+
+        myBank.applyAnnualBondCoupons("2027-03-22");
 
         retrievedClient->applyInterestIfDue("2026-04-21");
 

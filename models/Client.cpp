@@ -179,6 +179,14 @@ std::vector<Loan>& Client::getLoans() {
     return loans;
 }
 
+std::vector<std::unique_ptr<BankAccount>>& Client::getAccounts() {
+    return accounts;
+}
+
+const std::vector<std::unique_ptr<BankAccount>>& Client::getAccounts() const {
+    return accounts;
+}
+
 bool Client::closeSavingsAccount(const std::string& fromIBAN, const std::string& toIBAN, const std::string& dateStr) {
     if (fromIBAN == toIBAN) {
         Logger::error("Close savings failed: source and target IBAN match " + fromIBAN);
