@@ -99,3 +99,25 @@ std::string getCurrentDate() {
 
     return std::to_string(year) + "-" + twoDigits(month) + "-" + twoDigits(day);
 }
+
+std::string addMonths(const std::string& dateStr, int months) {
+    DateParts parts = parseDate(dateStr);
+    int totalMonths = (parts.year * 12) + (parts.month - 1) + months;
+    if (totalMonths < 0) {
+        throw std::invalid_argument("Invalid month adjustment: " + dateStr);
+    }
+
+    const int newYear = totalMonths / 12;
+    const int newMonth = (totalMonths % 12) + 1;
+    const int maxDay = daysInMonth(newYear, newMonth);
+    const int newDay = parts.day > maxDay ? maxDay : parts.day;
+
+    auto twoDigits = [](int value) {
+        if (value < 10) {
+            return std::string("0") + std::to_string(value);
+        }
+        return std::to_string(value);
+    };
+
+    return std::to_string(newYear) + "-" + twoDigits(newMonth) + "-" + twoDigits(newDay);
+}

@@ -60,6 +60,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
     models/SavingsAccount.cpp
     models/RetirementAccount.h
     models/RetirementAccount.cpp
+    models/Loan.h
+    models/Loan.cpp
     utils/DateUtils.h
     utils/DateUtils.cpp
     utils/InterestAccrual.h

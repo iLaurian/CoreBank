@@ -13,5 +13,6 @@ DateParts parseDate(const std::string& dateStr);
 std::string getCurrentDate();
 bool isValidDate(const std::string& dateStr);
 int daysBetween(const std::string& fromDate, const std::string& toDate);
+std::string addMonths(const std::string& dateStr, int months);
 
 #endif

@@ -86,6 +86,18 @@ const Transaction& BankAccount::getTransaction(int index) const {
     return transactions[static_cast<size_t>(index)];
 }
 
+bool BankAccount::tryPay(double amount, const std::string& dateStr) {
+    if (amount > balance) {
+        return false;
+    }
+
+    const Transaction t(PAYMENT, currency, dateStr, amount, IBAN, "BANK");
+    balance -= amount;
+    addTransaction(t);
+
+    return true;
+}
+
 void BankAccount::processDeposit(double amount, const std::string& dateStr) {
     const Transaction t(DEPOSIT, currency, dateStr, amount, "ATM", IBAN);
     balance += amount;

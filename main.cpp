@@ -10,29 +10,24 @@
 
 int main() {
     try {
-        Bank myBank("CoreBank International", "CBINTRO");
+        Bank::initialize("CoreBank International", "CBINTRO");
+        Bank& myBank = Bank::instance();
 
         std::cout << myBank.getSwiftCode() << "\n";
 
-        auto client1 = std::make_unique<Client>("1900101123456", "John Doe", "123 Silicon Valley", 4500.00);
-        auto client2 = std::make_unique<Client>("2900202234567", "Jane Smith", "456 Business Blvd", 8000.00);
-
-        auto dummyClient = std::make_unique<Client>("0000000000000", "Dummy", "Nowhere", 1000.00);
+        Client* client1 = myBank.registerClient("1900101123456", "John Doe", "123 Silicon Valley", 4500.00);
+        Client* client2 = myBank.registerClient("2900202234567", "Jane Smith", "456 Business Blvd", 8000.00);
+        myBank.registerClient("0000000000000", "Dummy", "Nowhere", 1000.00);
 
         auto acc1_usd = std::make_unique<PersonalAccount>("RO12CBIN000000000001", 1500.00, USD);
         auto acc2_eur = std::make_unique<SavingsAccount>("RO12CBIN000000000002", 500.00, EUR);
         auto acc3_gbp = std::make_unique<RetirementAccount>("RO12CBIN000000000003", 2000.00, GBP, "2030-01-01");
-
         auto acc_dummy = std::make_unique<SavingsAccount>("RO12CBIN999999999999", 100.00, USD);
 
         client1->addBankAccount(std::move(acc1_usd));
         client1->addBankAccount(std::move(acc2_eur));
         client1->addBankAccount(std::move(acc_dummy));
         client2->addBankAccount(std::move(acc3_gbp));
-
-        myBank.addClient(std::move(client1));
-        myBank.addClient(std::move(client2));
-        myBank.addClient(std::move(dummyClient));
 
         Client* retrievedClient = myBank.getClient("1900101123456");
         std::cout << retrievedClient->getName() << "\n";
@@ -83,7 +78,12 @@ int main() {
 
         retrievedClient->removeBankAccount("RO12CBIN000000000002");
 
-        retrievedClient->evaluateLoanEligibility(15000.00, 60);
+        const auto loanResult = retrievedClient->requestLoan(5000.00, 24, "2026-04-21", "RO12CBIN000000000001");
+        if (loanResult.approved) {
+            myBank.applyMonthlyLoanPayments("2026-05-21");
+        } else {
+            std::cout << "Loan request denied: " << loanResult.reason << "\n";
+        }
 
         myBank.removeClient("0000000000000");
 

@@ -32,6 +32,7 @@ public:
     int getTransactionCount() const;
     Currency getCurrency() const;
     const Transaction& getTransaction(int index) const;
+    bool tryPay(double amount, const std::string& dateStr);
     const std::string& getInceptionDate() const;
 
     virtual void addTransaction(const Transaction& t);

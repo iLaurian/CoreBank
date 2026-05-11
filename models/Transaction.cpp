@@ -27,9 +27,20 @@ void Transaction::validateTransactionLogic(TransactionType type, const std::stri
         if (tgtIBAN != "ATM") throw std::invalid_argument("WITHDRAWAL transactions must have target IBAN as 'ATM'");
         Validator::validateIBAN(srcIBAN);
     }
-    if (type == TRANSFER || type == PAYMENT) {
+    if (type == TRANSFER) {
         Validator::validateIBAN(srcIBAN);
         Validator::validateIBAN(tgtIBAN);
+        if (srcIBAN == tgtIBAN) {
+            throw std::invalid_argument("Source and target IBAN cannot be the same for TRANSFER or PAYMENT");
+        }
+    }
+    if (type == PAYMENT) {
+        if (srcIBAN != "BANK") {
+            Validator::validateIBAN(srcIBAN);
+        }
+        if (tgtIBAN != "BANK") {
+            Validator::validateIBAN(tgtIBAN);
+        }
         if (srcIBAN == tgtIBAN) {
             throw std::invalid_argument("Source and target IBAN cannot be the same for TRANSFER or PAYMENT");
         }

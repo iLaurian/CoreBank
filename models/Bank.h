@@ -12,8 +12,14 @@ class Bank {
     std::string swiftCode;
     std::vector<std::unique_ptr<Client>> clients;
 
-public:
+    static double calculateMonthlyPayment(double amount, double annualRate, int months);
+    bool isClientRegistered(const Client* client) const;
+
     Bank(const std::string& name, const std::string& swiftCode);
+
+public:
+    static void initialize(const std::string& name, const std::string& swiftCode);
+    static Bank& instance();
     ~Bank();
 
     Bank(const Bank&) = delete;
@@ -24,13 +30,16 @@ public:
     const std::string& getName() const;
     const std::string& getSwiftCode() const;
 
-    void addClient(std::unique_ptr<Client> client);
+    Client* registerClient(const std::string& cnp, const std::string& clientName, const std::string& clientAddress, double monthlyIncome);
     void removeClient(const std::string& cnp);
     Client* getClient(const std::string& cnp) const;
 
     BankAccount* findAccountByIBAN(const std::string& cnp) const;
 
     void processTransfer(const std::string& fromIBAN, const std::string& toIBAN, double amount, const std::string& dateStr);
+
+    LoanRequestResult evaluateLoanRequest(const Client& client, double amount, int months) const;
+    void applyMonthlyLoanPayments(const std::string& dateStr);
 
     double calculateTotalBankAssets() const;
 

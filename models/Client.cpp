@@ -1,7 +1,9 @@
 #include "Client.h"
 #include <algorithm>
 #include <cmath>
+#include "Bank.h"
 #include "../utils/CurrencyConverter.h"
+#include "../utils/DateUtils.h"
 #include "SavingsAccount.h"
 #include "RetirementAccount.h"
 
@@ -9,8 +11,33 @@ Client::Client(const std::string &cnp, const std::string &name, const std::strin
     : cnp(cnp), name(name), address(address), monthlyIncome(monthlyIncome) {
 }
 
+Client::Client(const Client& other)
+    : cnp(other.cnp), name(other.name), address(other.address), monthlyIncome(other.monthlyIncome), loans(other.loans) {
+    accounts.reserve(other.accounts.size());
+    for (const auto &acc : other.accounts) {
+        if (acc) {
+            accounts.push_back(acc->clone());
+        }
+    }
+}
+
+Client& Client::operator=(Client other) {
+    swap(*this, other);
+    return *this;
+}
+
 Client::~Client() {
     accounts.clear();
+}
+
+void swap(Client& first, Client& second) noexcept {
+    using std::swap;
+    swap(first.cnp, second.cnp);
+    swap(first.name, second.name);
+    swap(first.address, second.address);
+    swap(first.monthlyIncome, second.monthlyIncome);
+    swap(first.accounts, second.accounts);
+    swap(first.loans, second.loans);
 }
 
 int Client::calculateCreditScore() const {
@@ -113,33 +140,6 @@ double Client::calculateTotalNetWorth() const {
     return totalUSD;
 }
 
-void Client::evaluateLoanEligibility(double loanAmount, int months) const {
-    const int score = getCreditScore();
-    if (score < 500) {
-        std::cout << "Loan denied: Credit score too low.\n";
-        return;
-    }
-
-    double annualInterestRate = 0.12 - ((score - 500) * 0.0002);
-    if (annualInterestRate < 0.04) annualInterestRate = 0.04;
-
-    const double monthlyInterestRate = annualInterestRate / 12;
-    const double mathPower = std::pow(1 + monthlyInterestRate, months);
-    const double monthlyPayment = loanAmount * (monthlyInterestRate * mathPower) / (mathPower - 1);
-
-    const double maxAllowedPayment = monthlyIncome * 0.4;
-    if (monthlyPayment > maxAllowedPayment) {
-        std::cout << "Loan rejected: Monthly payment exceeds 40% of monthly income.\n";
-        return;
-    }
-
-    std::cout << "\n--- Loan Evaluation ---\n";
-    std::cout << "Status: APPROVED.\n";
-    std::cout << "Requested amount: " << loanAmount << " for " << months << " months.\n";
-    std::cout << "Applied interest rate: " << (annualInterestRate * 100) << "% annually.\n";
-    std::cout << "Estimated monthly payment: " << monthlyPayment << "\n";
-}
-
 
 void Client::transferBetweenOwnAccounts(const std::string &fromIBAN, const std::string &toIBAN, double amount, const std::string& dateStr) {
     if (fromIBAN == toIBAN) {
@@ -156,6 +156,14 @@ void Client::transferBetweenOwnAccounts(const std::string &fromIBAN, const std::
     source->processOutgoingTransfer(amount, toIBAN, dateStr);
     double convertedAmount = CurrencyConverter::convert(amount, source->getCurrency(), target->getCurrency());
     target->processIncomingTransfer(convertedAmount, fromIBAN, dateStr);
+}
+
+const std::vector<Loan>& Client::getLoans() const {
+    return loans;
+}
+
+std::vector<Loan>& Client::getLoans() {
+    return loans;
 }
 
 void Client::closeSavingsAccount(const std::string& fromIBAN, const std::string& toIBAN, const std::string& dateStr) {
@@ -196,6 +204,29 @@ void Client::applyInterestIfDue(const std::string& dateStr) {
             retirement->applyInterestIfDue(dateStr);
         }
     }
+}
+
+LoanRequestResult Client::requestLoan(double amount, int months, const std::string& dateStr, const std::string& targetIBAN) {
+    const auto result = Bank::instance().evaluateLoanRequest(*this, amount, months);
+    if (!result.approved) {
+        return result;
+    }
+
+    BankAccount* target = getBankAccount(targetIBAN);
+    if (!target) {
+        return {false, "Target account not found.", std::nullopt};
+    }
+
+    Loan loan = *result.loan;
+    loan.startDate = dateStr;
+    loan.nextDueDate = addMonths(dateStr, 1);
+    loan.paymentIBAN = targetIBAN;
+    loan.currency = target->getCurrency();
+
+    target->processDeposit(loan.principal, dateStr);
+    loans.push_back(loan);
+
+    return {true, "Approved.", loan};
 }
 
 std::ostream & operator<<(std::ostream &os, const Client &client) {
