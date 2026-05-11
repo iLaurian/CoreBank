@@ -5,10 +5,6 @@
 
 BankAccount::~BankAccount() = default;
 
-std::unique_ptr<BankAccount> BankAccount::clone() const {
-    return std::make_unique<BankAccount>(*this);
-}
-
 BankAccount::BankAccount(const std::string& iban, double initialBalance, const Currency curr, const std::string& inception)
     : IBAN(iban), balance(initialBalance), currency(curr),
       inceptionDate(inception.empty() ? getCurrentDate() : inception),
@@ -127,6 +123,17 @@ void BankAccount::processOutgoingTransfer(double amount, const std::string &toIB
 void BankAccount::processIncomingTransfer(double amount, const std::string& fromIBAN, const std::string& dateStr) {
     const Transaction t(TRANSFER, currency, dateStr, amount, fromIBAN, IBAN);
     balance += amount;
+    addTransaction(t);
+}
+
+void BankAccount::applyMonthlyFee(const std::string& dateStr) {
+    const double fee = calculateMonthlyFee();
+    if (fee <= 0.0) {
+        return;
+    }
+
+    const Transaction t(FEE, currency, dateStr, fee, IBAN, "BANK");
+    balance -= fee;
     addTransaction(t);
 }
 

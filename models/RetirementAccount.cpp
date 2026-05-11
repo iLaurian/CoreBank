@@ -71,3 +71,7 @@ void RetirementAccount::applyInterestIfDue(const std::string& dateStr) {
 void RetirementAccount::printDetails(std::ostream& os) const {
     os << "RetirementAccount";
 }
+
+double RetirementAccount::calculateMonthlyFee() const {
+    return 0.0;
+}

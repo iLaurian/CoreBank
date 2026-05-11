@@ -194,6 +194,12 @@ void Bank::applyMonthlyLoanPayments(const std::string& dateStr) {
     }
 }
 
+void Bank::applyMonthlyAccountFees(const std::string& dateStr) {
+    for (const auto &client : clients) {
+        client->applyMonthlyAccountFees(dateStr);
+    }
+}
+
 double Bank::calculateTotalBankAssets() const {
     double totalBankAssets = 0.0;
     for (const auto &client : clients) {

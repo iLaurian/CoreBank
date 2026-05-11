@@ -11,3 +11,7 @@ std::unique_ptr<BankAccount> PersonalAccount::clone() const {
 void PersonalAccount::printDetails(std::ostream& os) const {
     os << "PersonalAccount";
 }
+
+double PersonalAccount::calculateMonthlyFee() const {
+    return 5.0;
+}

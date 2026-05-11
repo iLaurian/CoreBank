@@ -9,7 +9,7 @@ enum Currency {
 };
 
 enum TransactionType {
-    DEPOSIT, WITHDRAWAL, TRANSFER, PAYMENT, INTEREST
+    DEPOSIT, WITHDRAWAL, TRANSFER, PAYMENT, INTEREST, FEE
 };
 
 class Transaction {

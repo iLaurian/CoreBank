@@ -72,6 +72,8 @@ int main() {
             "2026-03-22"
         );
 
+        myBank.applyMonthlyAccountFees("2026-04-01");
+
         retrievedClient->applyInterestIfDue("2026-04-21");
 
         retrievedClient->closeSavingsAccount("RO12CBIN999999999999", "RO12CBIN000000000001", "2026-04-01");

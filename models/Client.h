@@ -43,6 +43,7 @@ public:
     void transferBetweenOwnAccounts(const std::string& fromIBAN, const std::string& toIBAN, double amount, const std::string& dateStr);
     void closeSavingsAccount(const std::string& fromIBAN, const std::string& toIBAN, const std::string& dateStr);
     void applyInterestIfDue(const std::string& dateStr);
+    void applyMonthlyAccountFees(const std::string& dateStr);
     LoanRequestResult requestLoan(double amount, int months, const std::string& dateStr, const std::string& targetIBAN);
 
     std::vector<Loan>& getLoans();

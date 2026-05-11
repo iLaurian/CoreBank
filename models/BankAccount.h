@@ -19,13 +19,14 @@ protected:
 
     void resizeTransactions();
     virtual void printDetails(std::ostream& os) const;
+    virtual double calculateMonthlyFee() const = 0;
 
 public:
     BankAccount(const std::string& iban, double initialBalance, Currency curr = USD, const std::string& inceptionDate = "");
     BankAccount(const BankAccount& other);
     BankAccount& operator=(const BankAccount& other);
     virtual ~BankAccount();
-    virtual std::unique_ptr<BankAccount> clone() const;
+    virtual std::unique_ptr<BankAccount> clone() const = 0;
 
     const std::string& getIBAN() const;
     double getBalance() const;
@@ -40,6 +41,7 @@ public:
     virtual void processWithdrawal(double amount, const std::string& dateStr);
     virtual void processOutgoingTransfer(double amount, const std::string& toIBAN, const std::string& dateStr);
     virtual void processIncomingTransfer(double amount, const std::string& fromIBAN, const std::string& dateStr);
+    void applyMonthlyFee(const std::string& dateStr);
 
     friend std::ostream& operator<<(std::ostream& os, const BankAccount& account);
 

@@ -206,6 +206,14 @@ void Client::applyInterestIfDue(const std::string& dateStr) {
     }
 }
 
+void Client::applyMonthlyAccountFees(const std::string& dateStr) {
+    for (const auto &account : accounts) {
+        if (account) {
+            account->applyMonthlyFee(dateStr);
+        }
+    }
+}
+
 LoanRequestResult Client::requestLoan(double amount, int months, const std::string& dateStr, const std::string& targetIBAN) {
     const auto result = Bank::instance().evaluateLoanRequest(*this, amount, months);
     if (!result.approved) {

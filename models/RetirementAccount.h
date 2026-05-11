@@ -15,6 +15,7 @@ public:
 
 protected:
     void printDetails(std::ostream& os) const override;
+    double calculateMonthlyFee() const override;
 
 private:
     std::string maturityDate;

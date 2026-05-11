@@ -49,6 +49,10 @@ void Transaction::validateTransactionLogic(TransactionType type, const std::stri
         if (srcIBAN != "BANK") throw std::invalid_argument("INTEREST transactions must have source IBAN as 'BANK'");
         Validator::validateIBAN(tgtIBAN);
     }
+    if (type == FEE) {
+        Validator::validateIBAN(srcIBAN);
+        if (tgtIBAN != "BANK") throw std::invalid_argument("FEE transactions must have target IBAN as 'BANK'");
+    }
 }
 
 Transaction::Transaction(const TransactionType tType, Currency curr,
@@ -77,6 +81,7 @@ std::string Transaction::getType() const {
         case TRANSFER: return "TRANSFER";
         case PAYMENT: return "PAYMENT";
         case INTEREST: return "INTEREST";
+        case FEE: return "FEE";
         default: return "UNKNOWN";
     }
 }

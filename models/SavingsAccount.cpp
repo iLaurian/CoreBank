@@ -70,3 +70,7 @@ void SavingsAccount::closeAndTransferTo(BankAccount& target, const std::string& 
 void SavingsAccount::printDetails(std::ostream& os) const {
     os << "SavingsAccount";
 }
+
+double SavingsAccount::calculateMonthlyFee() const {
+    return balance * 0.01;
+}
