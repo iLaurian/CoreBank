@@ -1,6 +1,7 @@
 #include "Transaction.h"
 #include "../utils/Validator.h"
 #include "../utils/Logger.h"
+#include "../utils/BankExceptions.h"
 #include <random>
 #include <sstream>
 #include <stdexcept>
@@ -92,10 +93,12 @@ Transaction::Transaction(const TransactionType tType, Currency curr,
       sourceIBAN(srcIBAN),
       targetIBAN(tgtIBAN) {
     if (!Validator::validateDate(dateStr) || !Validator::validateAmount(amt)) {
-        throw std::invalid_argument("Invalid transaction data");
+        Logger::error("Invalid transaction data");
+        throw ValidationError("Invalid transaction data");
     }
     if (!validateTransactionLogic(type, sourceIBAN, targetIBAN)) {
-        throw std::invalid_argument("Invalid transaction logic");
+        Logger::error("Invalid transaction logic");
+        throw ValidationError("Invalid transaction logic");
     }
     Logger::info("Transaction created: " + getType() + " " + std::to_string(amount) +
                  " " + getCurrency() + " From: " + sourceIBAN + " To: " + targetIBAN);

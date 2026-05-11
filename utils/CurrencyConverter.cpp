@@ -1,5 +1,6 @@
 #include "CurrencyConverter.h"
 #include "Logger.h"
+#include "BankExceptions.h"
 
 namespace CurrencyConverter {
     double getRateToUSD(Currency curr) {
@@ -10,10 +11,10 @@ namespace CurrencyConverter {
             case JPY: return 0.0063;
             case CHF: return 1.27;
             default:
-                Logger::error("Unsupported currency conversion");
-                throw std::invalid_argument("Unsupported currency");
-        }
+            Logger::error("Unsupported currency conversion");
+            throw ConfigurationError("Unsupported currency");
     }
+}
 
     double getExchangeRate(Currency from, Currency to) {
         if (from == to) return 1.0;

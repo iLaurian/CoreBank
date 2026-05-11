@@ -5,6 +5,7 @@
 #include "../utils/CurrencyConverter.h"
 #include "../utils/DateUtils.h"
 #include "../utils/Logger.h"
+#include "../utils/BankExceptions.h"
 
 namespace {
     std::string g_bankName;
@@ -25,7 +26,8 @@ void Bank::initialize(const std::string& bankName, const std::string& bankSwiftC
 
 Bank& Bank::instance() {
     if (!g_bankInitialized) {
-        throw std::runtime_error("Bank::initialize must be called before Bank::instance().");
+        Logger::error("Bank instance requested before initialization");
+        throw ConfigurationError("Bank::initialize must be called before Bank::instance().");
     }
     static Bank instance(g_bankName, g_bankSwift);
     return instance;
@@ -47,7 +49,7 @@ Client* Bank::registerClient(const std::string& cnp, const std::string& clientNa
     for (const auto &c : clients) {
         if (c->getCNP() == cnp) {
             Logger::error("Client registration failed: duplicate CNP " + cnp);
-            throw std::invalid_argument("Client with this CNP already exists in the bank.");
+            throw ValidationError("Client with this CNP already exists in the bank.");
         }
     }
 
@@ -65,7 +67,7 @@ void Bank::removeClient(const std::string &cnp) {
 
     if (it == clients.end()) {
         Logger::error("Client removal failed: CNP not found " + cnp);
-        throw std::invalid_argument("Client with CNP " + cnp + " not found.");
+        throw NotFoundError("Client with CNP " + cnp + " not found.");
     }
 
     clients.erase(it);
@@ -79,7 +81,7 @@ Client* Bank::getClient(const std::string &cnp) const {
         }
     }
     Logger::error("Client lookup failed: CNP not found " + cnp);
-    throw std::invalid_argument("Client not found.");
+    throw NotFoundError("Client not found.");
 }
 
 BankAccount *Bank::findAccountByIBAN(const std::string &iban) const {

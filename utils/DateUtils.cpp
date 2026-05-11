@@ -1,6 +1,7 @@
 #include "DateUtils.h"
 #include <stdexcept>
 #include "Logger.h"
+#include "BankExceptions.h"
 #include <ctime>
 
 static bool isLeapYear(int year) {
@@ -22,7 +23,7 @@ static bool isDigitChar(char c) {
 DateParts parseDate(const std::string& dateStr) {
     if (dateStr.size() != 10 || dateStr[4] != '-' || dateStr[7] != '-') {
         Logger::error("Invalid date format: " + dateStr);
-        throw std::invalid_argument("Invalid date format: " + dateStr);
+        throw ValidationError("Invalid date format: " + dateStr);
     }
 
     for (size_t i = 0; i < dateStr.size(); ++i) {
@@ -31,7 +32,7 @@ DateParts parseDate(const std::string& dateStr) {
         }
         if (!isDigitChar(dateStr[i])) {
             Logger::error("Invalid date format: " + dateStr);
-            throw std::invalid_argument("Invalid date format: " + dateStr);
+            throw ValidationError("Invalid date format: " + dateStr);
         }
     }
 
@@ -43,13 +44,13 @@ DateParts parseDate(const std::string& dateStr) {
 
     if (parts.month < 1 || parts.month > 12) {
         Logger::error("Invalid date format: " + dateStr);
-        throw std::invalid_argument("Invalid date format: " + dateStr);
+        throw ValidationError("Invalid date format: " + dateStr);
     }
 
     const int maxDay = daysInMonth(parts.year, parts.month);
     if (parts.day < 1 || parts.day > maxDay) {
         Logger::error("Invalid date format: " + dateStr);
-        throw std::invalid_argument("Invalid date format: " + dateStr);
+        throw ValidationError("Invalid date format: " + dateStr);
     }
 
     return parts;
@@ -110,7 +111,7 @@ std::string addMonths(const std::string& dateStr, int months) {
     int totalMonths = (parts.year * 12) + (parts.month - 1) + months;
     if (totalMonths < 0) {
         Logger::error("Invalid month adjustment: " + dateStr);
-        throw std::invalid_argument("Invalid month adjustment: " + dateStr);
+        throw ValidationError("Invalid month adjustment: " + dateStr);
     }
 
     const int newYear = totalMonths / 12;

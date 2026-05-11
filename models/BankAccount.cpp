@@ -3,6 +3,7 @@
 #include "../utils/Validator.h"
 #include "../utils/DateUtils.h"
 #include "../utils/Logger.h"
+#include "../utils/BankExceptions.h"
 
 BankAccount::~BankAccount() {
     Logger::info("Account destroyed: " + IBAN);
@@ -15,7 +16,7 @@ BankAccount::BankAccount(const std::string& iban, double initialBalance, const C
 
     if (!Validator::validateIBAN(iban) || !Validator::validateAmount(initialBalance) || !Validator::validateDate(inceptionDate)) {
         Logger::error("Account initialization failed for IBAN: " + iban);
-        throw std::invalid_argument("Invalid bank account initialization data");
+        throw ValidationError("Invalid bank account initialization data");
     }
 
     transactions.reserve(transactionCapacity);
@@ -85,7 +86,8 @@ void BankAccount::addTransaction(const Transaction& t) {
 
 const Transaction& BankAccount::getTransaction(int index) const {
     if (index < 0 || index >= transactionCount) {
-        throw std::out_of_range("Transaction index out of range");
+        Logger::error("Transaction index out of range: " + std::to_string(index));
+        throw NotFoundError("Transaction index out of range");
     }
     return transactions[static_cast<size_t>(index)];
 }
