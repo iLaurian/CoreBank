@@ -50,6 +50,13 @@ include(cmake/CopyHelper.cmake)
 # NOTE: update executable name in .github/workflows/cmake.yml:25 when changing name here
 add_executable(${MAIN_EXECUTABLE_NAME}
     main.cpp
+        server/ApiTypes.h
+        server/BankService.h
+        server/BankService.cpp
+        server/Scheduler.h
+        server/Scheduler.cpp
+        server/HttpServer.h
+        server/HttpServer.cpp
         models/cbtransaction/Transaction.h
         models/cbtransaction/Transaction.cpp
         models/cbaccount/BankAccount.cpp
@@ -77,6 +84,9 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         utils/cblogger/Logger.cpp
         utils/cbjson/JsonLoader.h
         utils/cbjson/JsonLoader.cpp
+        utils/cbjson/JsonHelpers.h
+        utils/cbjson/JsonStore.h
+        utils/cbjson/JsonStore.cpp
         models/cbclient/Client.h
         models/cbclient/Client.cpp
         models/cbaccount/InvestmentAccount.h
@@ -99,6 +109,10 @@ set_compiler_flags(RUN_SANITIZERS TRUE TARGET_NAMES ${MAIN_EXECUTABLE_NAME})
 
 # use SYSTEM so cppcheck and clang-tidy do not report warnings from these directories
 target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ext/include)
+# Windows sockets for cpp-httplib
+if(WIN32)
+    target_link_libraries(${MAIN_EXECUTABLE_NAME} ws2_32)
+endif()
 # target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ${<SomeLib>_SOURCE_DIR}/include)
 # target_link_directories(${MAIN_EXECUTABLE_NAME} PRIVATE ${<SomeLib>_BINARY_DIR}/lib)
 # target_link_libraries(${MAIN_EXECUTABLE_NAME} <SomeLib>)

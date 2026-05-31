@@ -6,17 +6,7 @@
 #include "SavingsAccount.h"
 #include "RetirementAccount.h"
 #include "InvestmentAccount.h"
-
-namespace {
-    Currency parseCurrency(const std::string& code) {
-        if (code == "USD") return USD;
-        if (code == "EUR") return EUR;
-        if (code == "GBP") return GBP;
-        if (code == "JPY") return JPY;
-        if (code == "CHF") return CHF;
-        throw ValidationError("Unsupported currency code: " + code);
-    }
-}
+#include "../../utils/cbcurrency/CurrencyConverter.h"
 
 std::unique_ptr<BankAccount> AccountFactory::createAccount(const nlohmann::json& item) {
     const std::string type = item.at("type").get<std::string>();
@@ -32,7 +22,7 @@ std::unique_ptr<BankAccount> AccountFactory::createAccount(const nlohmann::json&
         throw ValidationError("Invalid inception date for IBAN: " + iban);
     }
 
-    const Currency currency = parseCurrency(currencyCode);
+    const Currency currency = CurrencyConverter::parseCurrency(currencyCode);
 
     if (type == "personal") {
         return std::make_unique<PersonalAccount>(iban, balance, currency, inceptionDate);

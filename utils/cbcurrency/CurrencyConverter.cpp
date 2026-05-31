@@ -1,8 +1,20 @@
 #include "CurrencyConverter.h"
+#include <iomanip>
+#include <sstream>
 #include "../cblogger/Logger.h"
 #include "../cbexception/BankExceptions.h"
 
 namespace CurrencyConverter {
+    Currency parseCurrency(const std::string& code) {
+        if (code == "USD") return USD;
+        if (code == "EUR") return EUR;
+        if (code == "GBP") return GBP;
+        if (code == "JPY") return JPY;
+        if (code == "CHF") return CHF;
+        Logger::error("Unsupported currency code: " + code);
+        throw ValidationError("Unsupported currency code: " + code);
+    }
+
     double getRateToUSD(Currency curr) {
         switch(curr) {
             case USD: return 1.0;
@@ -25,5 +37,19 @@ namespace CurrencyConverter {
 
     double convert(double amount, Currency from, Currency to) {
         return amount * getExchangeRate(from, to);
+    }
+
+    std::string formatCurrency(double amount, Currency curr) {
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(2);
+        switch (curr) {
+            case USD: oss << "$"; break;
+            case EUR: oss << "EUR "; break;
+            case GBP: oss << "GBP "; break;
+            case JPY: oss << "JPY "; break;
+            case CHF: oss << "CHF "; break;
+        }
+        oss << amount;
+        return oss.str();
     }
 }

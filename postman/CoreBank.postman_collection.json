@@ -1,0 +1,460 @@
+{
+  "info": {
+    "name": "CoreBank API",
+    "_postman_id": "b8f2d3e7-9c4a-4f62-9ed1-2f2e2a9a6c51",
+    "description": "CoreBank backend API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "cnp", "value": "1900101123456" },
+    { "key": "ibanPersonal", "value": "RO12CBIN000000000001" },
+    { "key": "ibanSavings", "value": "RO12CBIN000000000002" },
+    { "key": "ibanRetirement", "value": "RO12CBIN000000000003" },
+    { "key": "ibanInvestment", "value": "RO12CBIN000000000004" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bank",
+      "item": [
+        {
+          "name": "GET /bank",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/bank"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Clients",
+      "item": [
+        {
+          "name": "GET /clients",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/clients"
+          }
+        },
+        {
+          "name": "GET /clients/{cnp}",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/clients/{{cnp}}"
+          }
+        },
+        {
+          "name": "POST /clients",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/clients",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cnp\": \"1900101123456\",\n  \"name\": \"John Doe\",\n  \"address\": \"Bucharest\",\n  \"monthlyIncome\": 4500\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE /clients/{cnp}",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/clients/{{cnp}}"
+          }
+        },
+        {
+          "name": "GET /clients/{cnp}/credit-score",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/clients/{{cnp}}/credit-score"
+          }
+        },
+        {
+          "name": "GET /clients/{cnp}/net-worth",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/clients/{{cnp}}/net-worth"
+          }
+        },
+        {
+          "name": "GET /clients/{cnp}/accounts",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/clients/{{cnp}}/accounts"
+          }
+        },
+        {
+          "name": "GET /clients/{cnp}/loans",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/clients/{{cnp}}/loans"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Accounts - General",
+      "item": [
+        {
+          "name": "POST /clients/{cnp}/accounts/personal",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/clients/{{cnp}}/accounts/personal",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"initialBalance\": 1200.00,\n  \"currency\": \"USD\",\n  \"inceptionDate\": \"2026-03-22\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /clients/{cnp}/accounts/savings",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/clients/{{cnp}}/accounts/savings",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"initialBalance\": 5000.00,\n  \"currency\": \"EUR\",\n  \"inceptionDate\": \"2026-03-22\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /clients/{cnp}/accounts/retirement",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/clients/{{cnp}}/accounts/retirement",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"initialBalance\": 10000.00,\n  \"currency\": \"USD\",\n  \"maturityDate\": \"2036-03-22\",\n  \"inceptionDate\": \"2026-03-22\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /clients/{cnp}/accounts/investment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/clients/{{cnp}}/accounts/investment",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"initialBalance\": 8000.00,\n  \"currency\": \"USD\",\n  \"inceptionDate\": \"2026-03-22\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE /accounts/{iban}",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/accounts/{{ibanPersonal}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Accounts - Personal",
+      "item": [
+        {
+          "name": "GET /accounts/personal/{iban}",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/accounts/personal/{{ibanPersonal}}"
+          }
+        },
+        {
+          "name": "GET /accounts/personal/{iban}/transactions",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/accounts/personal/{{ibanPersonal}}/transactions"
+          }
+        },
+        {
+          "name": "POST /accounts/personal/{iban}/deposit",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/accounts/personal/{{ibanPersonal}}/deposit",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 300.00,\n  \"date\": \"2026-03-22\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /accounts/personal/{iban}/withdraw",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/accounts/personal/{{ibanPersonal}}/withdraw",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 50.00,\n  \"date\": \"2026-03-22\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /accounts/personal/{iban}/transfer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/accounts/personal/{{ibanPersonal}}/transfer",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"toIban\": \"{{ibanSavings}}\",\n  \"amount\": 100.00,\n  \"date\": \"2026-03-22\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Accounts - Savings",
+      "item": [
+        {
+          "name": "GET /accounts/savings/{iban}",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/accounts/savings/{{ibanSavings}}"
+          }
+        },
+        {
+          "name": "GET /accounts/savings/{iban}/transactions",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/accounts/savings/{{ibanSavings}}/transactions"
+          }
+        },
+        {
+          "name": "POST /accounts/savings/{iban}/deposit",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/accounts/savings/{{ibanSavings}}/deposit",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 300.00,\n  \"date\": \"2026-03-22\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /accounts/savings/{iban}/withdraw",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/accounts/savings/{{ibanSavings}}/withdraw",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 50.00,\n  \"date\": \"2026-03-22\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /accounts/savings/{iban}/transfer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/accounts/savings/{{ibanSavings}}/transfer",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"toIban\": \"{{ibanPersonal}}\",\n  \"amount\": 100.00,\n  \"date\": \"2026-03-22\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /accounts/savings/{iban}/close",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/accounts/savings/{{ibanSavings}}/close",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetIban\": \"{{ibanPersonal}}\",\n  \"date\": \"2026-04-01\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Accounts - Retirement",
+      "item": [
+        {
+          "name": "GET /accounts/retirement/{iban}",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/accounts/retirement/{{ibanRetirement}}"
+          }
+        },
+        {
+          "name": "GET /accounts/retirement/{iban}/transactions",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/accounts/retirement/{{ibanRetirement}}/transactions"
+          }
+        },
+        {
+          "name": "POST /accounts/retirement/{iban}/deposit",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/accounts/retirement/{{ibanRetirement}}/deposit",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 300.00,\n  \"date\": \"2026-03-22\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /accounts/retirement/{iban}/withdraw",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/accounts/retirement/{{ibanRetirement}}/withdraw",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 50.00,\n  \"date\": \"2026-03-22\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /accounts/retirement/{iban}/transfer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/accounts/retirement/{{ibanRetirement}}/transfer",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"toIban\": \"{{ibanPersonal}}\",\n  \"amount\": 100.00,\n  \"date\": \"2026-03-22\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Accounts - Investment",
+      "item": [
+        {
+          "name": "GET /accounts/investment/{iban}",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/accounts/investment/{{ibanInvestment}}"
+          }
+        },
+        {
+          "name": "GET /accounts/investment/{iban}/transactions",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/accounts/investment/{{ibanInvestment}}/transactions"
+          }
+        },
+        {
+          "name": "POST /accounts/investment/{iban}/deposit",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/accounts/investment/{{ibanInvestment}}/deposit",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 300.00,\n  \"date\": \"2026-03-22\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /accounts/investment/{iban}/withdraw",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/accounts/investment/{{ibanInvestment}}/withdraw",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 50.00,\n  \"date\": \"2026-03-22\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /accounts/investment/{iban}/transfer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/accounts/investment/{{ibanInvestment}}/transfer",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"toIban\": \"{{ibanPersonal}}\",\n  \"amount\": 100.00,\n  \"date\": \"2026-03-22\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /accounts/investment/{iban}/bonds",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/accounts/investment/{{ibanInvestment}}/bonds",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"BD1001\",\n  \"faceValue\": 1000.00,\n  \"annualCouponRate\": 0.05,\n  \"issueDate\": \"2026-03-22\",\n  \"maturityDate\": \"2029-03-22\",\n  \"currency\": \"USD\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET /accounts/investment/{iban}/bonds",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/accounts/investment/{{ibanInvestment}}/bonds"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transfers & Loans",
+      "item": [
+        {
+          "name": "POST /transfers",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/transfers",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromIban\": \"{{ibanPersonal}}\",\n  \"toIban\": \"{{ibanSavings}}\",\n  \"amount\": 200.00,\n  \"date\": \"2026-03-22\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /clients/{cnp}/transfers/own",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/clients/{{cnp}}/transfers/own",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromIban\": \"{{ibanPersonal}}\",\n  \"toIban\": \"{{ibanSavings}}\",\n  \"amount\": 50.00,\n  \"date\": \"2026-03-22\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /clients/{cnp}/loans",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/clients/{{cnp}}/loans",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 5000.00,\n  \"months\": 24,\n  \"date\": \"2026-04-21\",\n  \"targetIban\": \"{{ibanPersonal}}\"\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

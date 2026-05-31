@@ -2,6 +2,7 @@
 #define OOP_LOGGER_H
 
 #include <string>
+#include <fstream>
 
 class Logger {
 public:
@@ -14,6 +15,7 @@ private:
     static void log(const std::string& level, const std::string& message);
     static std::string currentTimestamp();
     static std::string fileTimestamp();
+    static std::ofstream& stream();
 };
 
 #endif

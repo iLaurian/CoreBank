@@ -71,6 +71,10 @@ void RetirementAccount::applyInterestIfDue(const std::string& dateStr) {
     lastInterestDate = dateStr;
 }
 
+const std::string& RetirementAccount::getMaturityDate() const {
+    return maturityDate;
+}
+
 void RetirementAccount::printDetails(std::ostream& os) const {
     os << "RetirementAccount";
 }

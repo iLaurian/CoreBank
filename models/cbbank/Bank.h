@@ -35,13 +35,16 @@ public:
     Client* registerClient(const std::string& cnp, const std::string& clientName, const std::string& clientAddress, double monthlyIncome);
     void removeClient(const std::string& cnp);
     Client* getClient(const std::string& cnp) const;
+    const std::vector<std::unique_ptr<Client>>& getClients() const;
+    Client* findClientByAccountIBAN(const std::string& iban) const;
 
     BankAccount* findAccountByIBAN(const std::string& cnp) const;
 
-    void processTransfer(const std::string& fromIBAN, const std::string& toIBAN, double amount, const std::string& dateStr);
+    bool processTransfer(const std::string& fromIBAN, const std::string& toIBAN, double amount, const std::string& dateStr);
 
     void applyMonthlyAccountFees(const std::string& dateStr);
     void applyAnnualBondCoupons(const std::string& dateStr);
+    void applyInterestForAll(const std::string& dateStr);
     LoanRequestResult evaluateLoanRequest(const Client& client, double amount, int months) const;
     void applyMonthlyLoanPayments(const std::string& dateStr);
 

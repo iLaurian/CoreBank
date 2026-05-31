@@ -163,8 +163,8 @@ std::ostream& operator<<(std::ostream& os, const BankAccount& account) {
     os << "(IBAN: " << account.IBAN << ", Balance: " << account.balance
        << ", Transactions: " << account.transactionCount << ")" << "\n";
 
-    ReportGenerator rpt("TRANSACTION HISTORY");
-    os << rpt.generateTable(account.transactions,
+    ReportGenerator<Transaction> rpt(
+        "TRANSACTION HISTORY",
         {"Date", "Type", "Amount", "From", "To", "ID"},
         [](const Transaction& t, size_t col) -> std::string {
             switch (col) {
@@ -177,6 +177,7 @@ std::ostream& operator<<(std::ostream& os, const BankAccount& account) {
                 default: return "";
             }
         });
+    os << rpt.generateTable(account.transactions);
 
     return os;
 }

@@ -9,6 +9,7 @@
 #include "../cbexception/BankExceptions.h"
 #include "../cbdate/DateUtils.h"
 #include "../cbvalidation/Validator.h"
+#include "../cbcurrency/CurrencyConverter.h"
 #include "../../models/cbaccount/AccountFactory.h"
 #include "../../models/cbbank/Bank.h"
 #include "../../models/cbclient/Client.h"
@@ -27,15 +28,6 @@ namespace {
         return data;
     }
 
-    Currency parseCurrency(const std::string& code) {
-        if (code == "USD") return USD;
-        if (code == "EUR") return EUR;
-        if (code == "GBP") return GBP;
-        if (code == "JPY") return JPY;
-        if (code == "CHF") return CHF;
-        Logger::error("Unsupported currency code: " + code);
-        throw ValidationError("Unsupported currency code: " + code);
-    }
 }
 
 Bank& JsonLoader::loadBankData(const std::string& bankPath,
@@ -100,7 +92,7 @@ Bank& JsonLoader::loadBankData(const std::string& bankPath,
         bond.annualCouponRate = item.at("annualCouponRate").get<double>();
         bond.issueDate = item.at("issueDate").get<std::string>();
         bond.maturityDate = item.at("maturityDate").get<std::string>();
-        bond.currency = parseCurrency(item.at("currency").get<std::string>());
+        bond.currency = CurrencyConverter::parseCurrency(item.at("currency").get<std::string>());
         bond.lastCouponYear = item.value("lastCouponYear", 0);
 
         investment->addBond(bond, getCurrentDate());

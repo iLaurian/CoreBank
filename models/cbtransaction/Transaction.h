@@ -8,6 +8,17 @@ enum Currency {
     USD, EUR, GBP, JPY, CHF
 };
 
+inline std::string currencyToString(Currency c) {
+    switch (c) {
+        case USD: return "USD";
+        case EUR: return "EUR";
+        case GBP: return "GBP";
+        case JPY: return "JPY";
+        case CHF: return "CHF";
+        default: return "UNKNOWN";
+    }
+}
+
 enum TransactionType {
     DEPOSIT, WITHDRAWAL, TRANSFER, PAYMENT, INTEREST, FEE
 };

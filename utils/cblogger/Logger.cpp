@@ -5,16 +5,18 @@
 #include <iomanip>
 #include <sstream>
 
-namespace {
-    std::ofstream g_logStream;
+std::ofstream& Logger::stream() {
+    static std::ofstream logStream;
+    return logStream;
 }
 
 void Logger::init(const std::string& directory) {
     std::filesystem::create_directories(directory);
     const std::string fileName = "log-" + fileTimestamp() + ".txt";
     const std::filesystem::path logPath = std::filesystem::path(directory) / fileName;
-    g_logStream.open(logPath.string(), std::ios::out | std::ios::app);
-    if (g_logStream.is_open()) {
+    std::ofstream& logStream = stream();
+    logStream.open(logPath.string(), std::ios::out | std::ios::app);
+    if (logStream.is_open()) {
         log("INFO", "Logger initialized at " + logPath.string());
     }
 }
@@ -32,11 +34,12 @@ void Logger::error(const std::string& message) {
 }
 
 void Logger::log(const std::string& level, const std::string& message) {
-    if (!g_logStream.is_open()) {
+    std::ofstream& logStream = stream();
+    if (!logStream.is_open()) {
         return;
     }
-    g_logStream << "[" << currentTimestamp() << "] " << level << " " << message << "\n";
-    g_logStream.flush();
+    logStream << "[" << currentTimestamp() << "] " << level << " " << message << "\n";
+    logStream.flush();
 }
 
 std::string Logger::currentTimestamp() {

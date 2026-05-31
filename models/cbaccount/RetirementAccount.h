@@ -12,6 +12,7 @@ public:
     bool processWithdrawal(double amount, const std::string& dateStr) override;
     bool processOutgoingTransfer(double amount, const std::string& toIBAN, const std::string& dateStr) override;
     void applyInterestIfDue(const std::string& dateStr);
+    const std::string& getMaturityDate() const;
 
 protected:
     void printDetails(std::ostream& os) const override;

@@ -7,6 +7,7 @@
 #include "../../utils/cblogger/Logger.h"
 #include "../../utils/cbexception/BankExceptions.h"
 #include "../../utils/cbbanking/ReportGenerator.h"
+#include "../../utils/cbcurrency/CurrencyConverter.h"
 #include "../cbaccount/InvestmentAccount.h"
 
 std::unique_ptr<Bank> Bank::instancePtr = nullptr;
@@ -83,6 +84,19 @@ Client* Bank::getClient(const std::string &cnp) const {
     throw NotFoundError("Client not found.");
 }
 
+const std::vector<std::unique_ptr<Client>>& Bank::getClients() const {
+    return clients;
+}
+
+Client* Bank::findClientByAccountIBAN(const std::string& iban) const {
+    for (const auto& client : clients) {
+        if (client->getBankAccount(iban)) {
+            return client.get();
+        }
+    }
+    return nullptr;
+}
+
 BankAccount *Bank::findAccountByIBAN(const std::string &iban) const {
     for (const auto &client : clients) {
         if (BankAccount* acc = client->getBankAccount(iban); acc != nullptr) {
@@ -93,19 +107,19 @@ BankAccount *Bank::findAccountByIBAN(const std::string &iban) const {
     return nullptr;
 }
 
-void Bank::processTransfer(const std::string &fromIBAN, const std::string &toIBAN, double amount, const std::string &dateStr) {
+bool Bank::processTransfer(const std::string &fromIBAN, const std::string &toIBAN, double amount, const std::string &dateStr) {
     if (fromIBAN == toIBAN) {
         Logger::error("Transfer failed: same IBAN " + fromIBAN);
-        return;
+        return false;
     }
 
     BankAccount *sourceAccount = findAccountByIBAN(fromIBAN);
     if (!sourceAccount) {
         Logger::error("Transfer failed: source account not found " + fromIBAN);
-        return;
+        return false;
     }
     if (!sourceAccount->processOutgoingTransfer(amount, toIBAN, dateStr)) {
-        return;
+        return false;
     }
 
     BankAccount *targetAccount = findAccountByIBAN(toIBAN);
@@ -113,8 +127,10 @@ void Bank::processTransfer(const std::string &fromIBAN, const std::string &toIBA
         double convertedAmount = CurrencyConverter::convert(amount, sourceAccount->getCurrency(), targetAccount->getCurrency());
         targetAccount->processIncomingTransfer(convertedAmount, fromIBAN, dateStr);
         Logger::info("Transfer completed: " + fromIBAN + " -> " + toIBAN);
+        return true;
     } else {
         Logger::warn("Transfer target account not found (external): " + toIBAN);
+        return true;
     }
 }
 
@@ -277,6 +293,13 @@ void Bank::applyAnnualBondCoupons(const std::string& dateStr) {
     Logger::info("Annual bond coupons processed for date: " + dateStr);
 }
 
+void Bank::applyInterestForAll(const std::string& dateStr) {
+    for (const auto& client : clients) {
+        client->applyInterestIfDue(dateStr);
+    }
+    Logger::info("Interest applied for all clients on date: " + dateStr);
+}
+
 double Bank::calculateTotalBankAssets() const {
     double totalBankAssets = 0.0;
     for (const auto &client : clients) {
@@ -294,19 +317,20 @@ std::ostream& operator<<(std::ostream& os, const Bank& bank) {
         os << *client << "\n";
     }
 
-    ReportGenerator rpt("CLIENT PORTFOLIO");
-    os << rpt.generateTable(bank.clients,
+    ReportGenerator<std::unique_ptr<Client>> rpt(
+        "CLIENT PORTFOLIO",
         {"Name", "CNP", "Income", "Net Worth", "Score"},
         [](const std::unique_ptr<Client>& c, size_t col) -> std::string {
             switch (col) {
                 case 0: return c->getName();
                 case 1: return c->getCNP();
-                case 2: return formatCurrency(static_cast<int>(c->getMonthlyIncome()), USD);
-                case 3: return formatCurrency(c->calculateTotalNetWorth(), USD);
+                case 2: return CurrencyConverter::formatCurrency(static_cast<int>(c->getMonthlyIncome()), USD);
+                case 3: return CurrencyConverter::formatCurrency(c->calculateTotalNetWorth(), USD);
                 case 4: return std::to_string(c->getCreditScore());
                 default: return "";
             }
         });
+    os << rpt.generateTable(bank.clients);
 
     return os;
 }

@@ -6,34 +6,22 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
-#include "../../models/cbtransaction/Transaction.h"
+#include <functional>
 
-template<typename T>
-std::string formatCurrency(T amount, Currency curr) {
-    std::ostringstream oss;
-    oss << std::fixed << std::setprecision(2);
-    switch (curr) {
-        case USD: oss << "$"; break;
-        case EUR: oss << "\u20AC"; break;
-        case GBP: oss << "\u00A3"; break;
-        case JPY: oss << "\u00A5"; break;
-        case CHF: oss << "CHF "; break;
-    }
-    oss << amount;
-    return oss.str();
-}
-
+template<typename Item>
 class ReportGenerator {
     std::string title;
+    std::vector<std::string> headers;
+    std::function<std::string(const Item&, size_t)> cellExtractor;
 
 public:
-    explicit ReportGenerator(std::string t) : title(std::move(t)) {}
+    ReportGenerator(std::string t,
+        std::vector<std::string> headerList,
+        std::function<std::string(const Item&, size_t)> extractor)
+        : title(std::move(t)), headers(std::move(headerList)), cellExtractor(std::move(extractor)) {}
 
-    template<typename U, typename Extractor>
     std::string generateTable(
-        const std::vector<U>& items,
-        const std::vector<std::string>& headers,
-        Extractor cellExtractor
+        const std::vector<Item>& items
     ) const {
         std::ostringstream oss;
         oss << title << "\n";
