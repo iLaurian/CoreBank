@@ -6,6 +6,7 @@
 #include "models/cbaccount/InvestmentAccount.h"
 #include "utils/cblogger/Logger.h"
 #include "utils/cbjson/JsonLoader.h"
+#include "utils/cbbanking/ReportGenerator.h"
 
 int main() {
     try {
@@ -89,6 +90,60 @@ int main() {
         myBank.removeClient("0000000000000");
 
         std::cout << myBank;
+
+        std::cout << "\n========== REPORT GENERATOR DEMO ==========\n\n";
+
+        const BankAccount* demoAcc = retrievedClient->getBankAccount("RO12CBIN000000000001");
+        if (demoAcc) {
+            std::vector<const Transaction*> txPtrs;
+            for (int i = 0; i < demoAcc->getTransactionCount(); ++i) {
+                txPtrs.push_back(&demoAcc->getTransaction(i));
+            }
+
+            ReportGenerator txRpt("ACCOUNT STATEMENT - RO12CBIN000000000001");
+            std::cout << txRpt.generateTable(txPtrs,
+                {"Date", "Type", "Amount", "From", "To", "ID"},
+                [](const Transaction* const& t, size_t col) -> std::string {
+                    switch (col) {
+                        case 0: return t->getDate();
+                        case 1: return t->getType();
+                        case 2: return std::to_string(t->getAmount());
+                        case 3: return t->getSourceIBAN();
+                        case 4: return t->getTargetIBAN();
+                        case 5: return t->getId();
+                        default: return "";
+                    }
+                });
+        }
+
+        {
+            std::vector<Client*> clientPtrs;
+            Client* c1 = myBank.getClient("1900101123456");
+            Client* c2 = myBank.getClient("2900202234567");
+            if (c1) clientPtrs.push_back(c1);
+            if (c2) clientPtrs.push_back(c2);
+
+            ReportGenerator clRpt("CLIENT PORTFOLIO REPORT");
+            std::cout << clRpt.generateTable(clientPtrs,
+                {"Name", "CNP", "Income", "Net Worth", "Score"},
+                [](const Client* const& c, size_t col) -> std::string {
+                    switch (col) {
+                        case 0: return c->getName();
+                        case 1: return c->getCNP();
+                        case 2: return formatCurrency(static_cast<int>(c->getMonthlyIncome()), USD);
+                        case 3: return formatCurrency(c->calculateTotalNetWorth(), USD);
+                        case 4: return std::to_string(c->getCreditScore());
+                        default: return "";
+                    }
+                });
+        }
+
+        std::cout << "\n--- formatCurrency standalone demo ---\n";
+        std::cout << "Balance in USD: " << formatCurrency(1234.56, USD) << "\n";
+        std::cout << "Balance in EUR: " << formatCurrency(987.65, EUR) << "\n";
+        std::cout << "Balance in GBP: " << formatCurrency(500.00, GBP) << "\n";
+        std::cout << "Balance in JPY: " << formatCurrency(100000, JPY) << "\n";
+        std::cout << "Balance in CHF: " << formatCurrency(1500.00, CHF) << "\n";
 
     } catch (const std::exception& e) {
         std::cerr << "EXCEPTION CAUGHT: " << e.what() << "\n";

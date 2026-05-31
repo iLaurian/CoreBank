@@ -6,6 +6,7 @@
 #include "../../utils/cbdate/DateUtils.h"
 #include "../../utils/cblogger/Logger.h"
 #include "../../utils/cbexception/BankExceptions.h"
+#include "../../utils/cbbanking/ReportGenerator.h"
 #include "../cbaccount/InvestmentAccount.h"
 
 std::unique_ptr<Bank> Bank::instancePtr = nullptr;
@@ -292,6 +293,20 @@ std::ostream& operator<<(std::ostream& os, const Bank& bank) {
     for (const auto &client : bank.clients) {
         os << *client << "\n";
     }
+
+    ReportGenerator rpt("CLIENT PORTFOLIO");
+    os << rpt.generateTable(bank.clients,
+        {"Name", "CNP", "Income", "Net Worth", "Score"},
+        [](const std::unique_ptr<Client>& c, size_t col) -> std::string {
+            switch (col) {
+                case 0: return c->getName();
+                case 1: return c->getCNP();
+                case 2: return formatCurrency(static_cast<int>(c->getMonthlyIncome()), USD);
+                case 3: return formatCurrency(c->calculateTotalNetWorth(), USD);
+                case 4: return std::to_string(c->getCreditScore());
+                default: return "";
+            }
+        });
 
     return os;
 }

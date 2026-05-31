@@ -83,6 +83,7 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         models/cbaccount/InvestmentAccount.cpp
         utils/cbcurrency/CurrencyConverter.h
         utils/cbcurrency/CurrencyConverter.cpp
+        utils/cbbanking/ReportGenerator.h
         models/cbbank/Bank.h
         models/cbbank/Bank.cpp
 )

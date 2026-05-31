@@ -126,6 +126,7 @@ std::string Transaction::getCurrency() const {
         case EUR: return "EUR";
         case GBP: return "GBP";
         case JPY: return "JPY";
+        case CHF: return "CHF";
         default: return "UNKNOWN";
     }
 }

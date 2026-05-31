@@ -4,6 +4,7 @@
 #include "../../utils/cbdate/DateUtils.h"
 #include "../../utils/cblogger/Logger.h"
 #include "../../utils/cbexception/BankExceptions.h"
+#include "../../utils/cbbanking/ReportGenerator.h"
 
 BankAccount::~BankAccount() {
     Logger::info("Account destroyed: " + IBAN);
@@ -162,9 +163,20 @@ std::ostream& operator<<(std::ostream& os, const BankAccount& account) {
     os << "(IBAN: " << account.IBAN << ", Balance: " << account.balance
        << ", Transactions: " << account.transactionCount << ")" << "\n";
 
-    for (int i = 0; i < account.transactionCount; ++i) {
-        os << account.transactions[static_cast<size_t>(i)] << "\n";
-    }
+    ReportGenerator rpt("TRANSACTION HISTORY");
+    os << rpt.generateTable(account.transactions,
+        {"Date", "Type", "Amount", "From", "To", "ID"},
+        [](const Transaction& t, size_t col) -> std::string {
+            switch (col) {
+                case 0: return t.getDate();
+                case 1: return t.getType();
+                case 2: return std::to_string(t.getAmount());
+                case 3: return t.getSourceIBAN();
+                case 4: return t.getTargetIBAN();
+                case 5: return t.getId();
+                default: return "";
+            }
+        });
 
     return os;
 }
