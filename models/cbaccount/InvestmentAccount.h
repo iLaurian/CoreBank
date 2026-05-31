@@ -2,7 +2,7 @@
 #define OOP_INVESTMENTACCOUNT_H
 
 #include "BankAccount.h"
-#include "Bond.h"
+#include "../cbinstrument/Bond.h"
 #include <vector>
 
 class InvestmentAccount : public BankAccount {

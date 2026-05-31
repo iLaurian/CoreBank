@@ -1,9 +1,9 @@
 #include "BankAccount.h"
 #include <memory>
-#include "../utils/Validator.h"
-#include "../utils/DateUtils.h"
-#include "../utils/Logger.h"
-#include "../utils/BankExceptions.h"
+#include "../../utils/cbvalidation/Validator.h"
+#include "../../utils/cbdate/DateUtils.h"
+#include "../../utils/cblogger/Logger.h"
+#include "../../utils/cbexception/BankExceptions.h"
 
 BankAccount::~BankAccount() {
     Logger::info("Account destroyed: " + IBAN);

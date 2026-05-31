@@ -5,17 +5,15 @@
 
 #include <nlohmann/json.hpp>
 
-#include "Logger.h"
-#include "BankExceptions.h"
-#include "DateUtils.h"
-#include "Validator.h"
-#include "../models/Bank.h"
-#include "../models/Client.h"
-#include "../models/PersonalAccount.h"
-#include "../models/SavingsAccount.h"
-#include "../models/RetirementAccount.h"
-#include "../models/InvestmentAccount.h"
-#include "../models/Bond.h"
+#include "../cblogger/Logger.h"
+#include "../cbexception/BankExceptions.h"
+#include "../cbdate/DateUtils.h"
+#include "../cbvalidation/Validator.h"
+#include "../../models/cbaccount/AccountFactory.h"
+#include "../../models/cbbank/Bank.h"
+#include "../../models/cbclient/Client.h"
+#include "../../models/cbaccount/InvestmentAccount.h"
+#include "../../models/cbinstrument/Bond.h"
 
 namespace {
     nlohmann::json loadJsonFile(const std::string& path) {
@@ -37,42 +35,6 @@ namespace {
         if (code == "CHF") return CHF;
         Logger::error("Unsupported currency code: " + code);
         throw ValidationError("Unsupported currency code: " + code);
-    }
-
-    std::unique_ptr<BankAccount> createAccount(const nlohmann::json& item) {
-        const std::string type = item.at("type").get<std::string>();
-        const std::string iban = item.at("iban").get<std::string>();
-        const double balance = item.at("balance").get<double>();
-        const std::string currencyCode = item.at("currency").get<std::string>();
-        const std::string inceptionDate = item.value("inceptionDate", "");
-
-        if (!Validator::validateIBAN(iban) || !Validator::validateAmount(balance)) {
-            throw ValidationError("Invalid account data for IBAN: " + iban);
-        }
-        if (!inceptionDate.empty() && !Validator::validateDate(inceptionDate)) {
-            throw ValidationError("Invalid inception date for IBAN: " + iban);
-        }
-
-        const Currency currency = parseCurrency(currencyCode);
-
-        if (type == "personal") {
-            return std::make_unique<PersonalAccount>(iban, balance, currency, inceptionDate);
-        }
-        if (type == "savings") {
-            return std::make_unique<SavingsAccount>(iban, balance, currency, inceptionDate);
-        }
-        if (type == "retirement") {
-            const std::string maturity = item.at("maturityDate").get<std::string>();
-            if (!Validator::validateDate(maturity)) {
-                throw ValidationError("Invalid maturity date for IBAN: " + iban);
-            }
-            return std::make_unique<RetirementAccount>(iban, balance, currency, maturity, inceptionDate);
-        }
-        if (type == "investment") {
-            return std::make_unique<InvestmentAccount>(iban, balance, currency, inceptionDate);
-        }
-
-        throw ValidationError("Unknown account type: " + type);
     }
 }
 
@@ -114,7 +76,7 @@ Bank& JsonLoader::loadBankData(const std::string& bankPath,
             throw ValidationError("Account owner not found: " + ownerCnp);
         }
 
-        std::unique_ptr<BankAccount> account = createAccount(item);
+        std::unique_ptr<BankAccount> account = AccountFactory::createAccount(item);
         const std::string iban = account->getIBAN();
         BankAccount* raw = account.get();
         it->second->addBankAccount(std::move(account));

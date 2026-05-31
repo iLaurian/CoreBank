@@ -1,6 +1,6 @@
 #include "InvestmentAccount.h"
-#include "../utils/DateUtils.h"
-#include "../utils/Logger.h"
+#include "../../utils/cbdate/DateUtils.h"
+#include "../../utils/cblogger/Logger.h"
 
 InvestmentAccount::InvestmentAccount(const std::string& iban, double initialBalance, Currency curr, const std::string& inceptionDate)
     : BankAccount(iban, initialBalance, curr, inceptionDate) {

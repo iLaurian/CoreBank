@@ -1,6 +1,6 @@
 #include "CurrencyConverter.h"
-#include "Logger.h"
-#include "BankExceptions.h"
+#include "../cblogger/Logger.h"
+#include "../cbexception/BankExceptions.h"
 
 namespace CurrencyConverter {
     double getRateToUSD(Currency curr) {

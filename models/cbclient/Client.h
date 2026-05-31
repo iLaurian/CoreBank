@@ -5,8 +5,8 @@
 #include <vector>
 #include <memory>
 #include <optional>
-#include "BankAccount.h"
-#include "Loan.h"
+#include "../cbaccount/BankAccount.h"
+#include "../cbloan/Loan.h"
 
 class Bank;
 

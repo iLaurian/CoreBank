@@ -50,39 +50,41 @@ include(cmake/CopyHelper.cmake)
 # NOTE: update executable name in .github/workflows/cmake.yml:25 when changing name here
 add_executable(${MAIN_EXECUTABLE_NAME}
     main.cpp
-    models/Transaction.h
-    models/Transaction.cpp
-    models/BankAccount.cpp
-    models/BankAccount.h
-    models/PersonalAccount.h
-    models/PersonalAccount.cpp
-    models/SavingsAccount.h
-    models/SavingsAccount.cpp
-    models/RetirementAccount.h
-    models/RetirementAccount.cpp
-    models/Loan.h
-    models/Loan.cpp
-    models/Bond.h
-    utils/DateUtils.h
-    utils/DateUtils.cpp
-    utils/InterestAccrual.h
-    utils/InterestAccrual.cpp
-    utils/Validator.h
-    utils/Validator.cpp
-    utils/BankExceptions.h
-    utils/BankExceptions.cpp
-    utils/Logger.h
-    utils/Logger.cpp
-    utils/JsonLoader.h
-    utils/JsonLoader.cpp
-    models/Client.h
-    models/Client.cpp
-    models/InvestmentAccount.h
-    models/InvestmentAccount.cpp
-    utils/CurrencyConverter.h
-    utils/CurrencyConverter.cpp
-    models/Bank.h
-    models/Bank.cpp
+        models/cbtransaction/Transaction.h
+        models/cbtransaction/Transaction.cpp
+        models/cbaccount/BankAccount.cpp
+        models/cbaccount/BankAccount.h
+        models/cbaccount/PersonalAccount.h
+        models/cbaccount/PersonalAccount.cpp
+        models/cbaccount/SavingsAccount.h
+        models/cbaccount/SavingsAccount.cpp
+        models/cbaccount/RetirementAccount.h
+        models/cbaccount/RetirementAccount.cpp
+        models/cbaccount/AccountFactory.h
+        models/cbaccount/AccountFactory.cpp
+        models/cbloan/Loan.h
+        models/cbloan/Loan.cpp
+        models/cbinstrument/Bond.h
+        utils/cbdate/DateUtils.h
+        utils/cbdate/DateUtils.cpp
+        utils/cbbanking/InterestAccrual.h
+        utils/cbbanking/InterestAccrual.cpp
+        utils/cbvalidation/Validator.h
+        utils/cbvalidation/Validator.cpp
+        utils/cbexception/BankExceptions.h
+        utils/cbexception/BankExceptions.cpp
+        utils/cblogger/Logger.h
+        utils/cblogger/Logger.cpp
+        utils/cbjson/JsonLoader.h
+        utils/cbjson/JsonLoader.cpp
+        models/cbclient/Client.h
+        models/cbclient/Client.cpp
+        models/cbaccount/InvestmentAccount.h
+        models/cbaccount/InvestmentAccount.cpp
+        utils/cbcurrency/CurrencyConverter.h
+        utils/cbcurrency/CurrencyConverter.cpp
+        models/cbbank/Bank.h
+        models/cbbank/Bank.cpp
 )
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )

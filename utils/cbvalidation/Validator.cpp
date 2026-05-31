@@ -1,8 +1,8 @@
 #include "Validator.h"
 #include <stdexcept>
 #include <cctype>
-#include "DateUtils.h"
-#include "Logger.h"
+#include "../cbdate/DateUtils.h"
+#include "../cblogger/Logger.h"
 
 namespace Validator {
     bool validateIBAN(const std::string& iban) {

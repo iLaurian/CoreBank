@@ -1,7 +1,7 @@
 #ifndef OOP_CURRENCYCONVERTER_H
 #define OOP_CURRENCYCONVERTER_H
 
-#include "../models/Transaction.h"
+#include "../../models/cbtransaction/Transaction.h"
 
 namespace CurrencyConverter {
     double getExchangeRate(Currency from, Currency to);

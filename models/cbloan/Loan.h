@@ -3,7 +3,7 @@
 
 #include <string>
 #include <optional>
-#include "Transaction.h"
+#include "../cbtransaction/Transaction.h"
 
 enum LoanStatus {
     ACTIVE, PAID, OVERDUE

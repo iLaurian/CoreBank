@@ -5,12 +5,14 @@
 #include <vector>
 #include <iostream>
 #include <memory>
-#include "Client.h"
+#include "../cbclient/Client.h"
 
 class Bank {
     std::string name;
     std::string swiftCode;
     std::vector<std::unique_ptr<Client>> clients;
+
+    static std::unique_ptr<Bank> instancePtr;
 
     static double calculateMonthlyPayment(double amount, double annualRate, int months);
     bool isClientRegistered(const Client* client) const;

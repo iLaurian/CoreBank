@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include "../models/Transaction.h"
+#include "../../models/cbtransaction/Transaction.h"
 
 struct InterestAccrual {
     static double calculate(const std::vector<Transaction>& transactions,

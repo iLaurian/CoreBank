@@ -1,12 +1,12 @@
 #include "Client.h"
 #include <algorithm>
 #include <cmath>
-#include "Bank.h"
-#include "../utils/CurrencyConverter.h"
-#include "../utils/DateUtils.h"
-#include "../utils/Logger.h"
-#include "SavingsAccount.h"
-#include "RetirementAccount.h"
+#include "../cbbank/Bank.h"
+#include "../../utils/cbcurrency/CurrencyConverter.h"
+#include "../../utils/cbdate/DateUtils.h"
+#include "../../utils/cblogger/Logger.h"
+#include "../cbaccount/SavingsAccount.h"
+#include "../cbaccount/RetirementAccount.h"
 
 Client::Client(const std::string &cnp, const std::string &name, const std::string &address, double monthlyIncome)
     : cnp(cnp), name(name), address(address), monthlyIncome(monthlyIncome) {

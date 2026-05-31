@@ -1,9 +1,9 @@
 #include "SavingsAccount.h"
 #include <stdexcept>
-#include "../utils/DateUtils.h"
-#include "../utils/CurrencyConverter.h"
-#include "../utils/InterestAccrual.h"
-#include "../utils/Logger.h"
+#include "../../utils/cbdate/DateUtils.h"
+#include "../../utils/cbcurrency/CurrencyConverter.h"
+#include "../../utils/cbbanking/InterestAccrual.h"
+#include "../../utils/cblogger/Logger.h"
 
 SavingsAccount::SavingsAccount(const std::string& iban, double initialBalance, Currency curr, const std::string& inceptionDate)
     : BankAccount(iban, initialBalance, curr, inceptionDate), lastInterestDate(getInceptionDate()) {

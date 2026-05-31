@@ -2,36 +2,33 @@
 #include <algorithm>
 #include <stdexcept>
 #include <cmath>
-#include "../utils/CurrencyConverter.h"
-#include "../utils/DateUtils.h"
-#include "../utils/Logger.h"
-#include "../utils/BankExceptions.h"
-#include "InvestmentAccount.h"
+#include "../../utils/cbcurrency/CurrencyConverter.h"
+#include "../../utils/cbdate/DateUtils.h"
+#include "../../utils/cblogger/Logger.h"
+#include "../../utils/cbexception/BankExceptions.h"
+#include "../cbaccount/InvestmentAccount.h"
 
-namespace {
-    std::string g_bankName;
-    std::string g_bankSwift;
-    bool g_bankInitialized = false;
-}
+std::unique_ptr<Bank> Bank::instancePtr = nullptr;
 
 Bank::Bank(const std::string &name, const std::string &swiftCode)
     : name(name), swiftCode(swiftCode) {
 }
 
 void Bank::initialize(const std::string& bankName, const std::string& bankSwiftCode) {
-    g_bankName = bankName;
-    g_bankSwift = bankSwiftCode;
-    g_bankInitialized = true;
+    if (instancePtr) {
+        Logger::error("Bank already initialized");
+        throw ConfigurationError("Bank::initialize called more than once.");
+    }
+    instancePtr = std::unique_ptr<Bank>(new Bank(bankName, bankSwiftCode));
     Logger::info("Bank initialized: " + bankName + " (" + bankSwiftCode + ")");
 }
 
 Bank& Bank::instance() {
-    if (!g_bankInitialized) {
+    if (!instancePtr) {
         Logger::error("Bank instance requested before initialization");
         throw ConfigurationError("Bank::initialize must be called before Bank::instance().");
     }
-    static Bank instance(g_bankName, g_bankSwift);
-    return instance;
+    return *instancePtr;
 }
 
 Bank::~Bank() {

@@ -1,7 +1,7 @@
 #include "Transaction.h"
-#include "../utils/Validator.h"
-#include "../utils/Logger.h"
-#include "../utils/BankExceptions.h"
+#include "../../utils/cbvalidation/Validator.h"
+#include "../../utils/cblogger/Logger.h"
+#include "../../utils/cbexception/BankExceptions.h"
 #include <random>
 #include <sstream>
 #include <stdexcept>

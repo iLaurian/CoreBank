@@ -2,7 +2,7 @@
 #define OOP_BOND_H
 
 #include <string>
-#include "Transaction.h"
+#include "../cbtransaction/Transaction.h"
 
 struct Bond {
     std::string id;

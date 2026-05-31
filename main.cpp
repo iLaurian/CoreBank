@@ -1,11 +1,11 @@
 #include <iostream>
 #include <exception>
-#include "models/Bank.h"
-#include "models/Client.h"
-#include "models/BankAccount.h"
-#include "models/InvestmentAccount.h"
-#include "utils/Logger.h"
-#include "utils/JsonLoader.h"
+#include "models/cbbank/Bank.h"
+#include "models/cbclient/Client.h"
+#include "models/cbaccount/BankAccount.h"
+#include "models/cbaccount/InvestmentAccount.h"
+#include "utils/cblogger/Logger.h"
+#include "utils/cbjson/JsonLoader.h"
 
 int main() {
     try {
