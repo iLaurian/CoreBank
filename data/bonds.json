@@ -1,0 +1,12 @@
+[
+  {
+    "ownerIban": "RO12CBIN000000000004",
+    "id": "BND001",
+    "faceValue": 1000.0,
+    "annualCouponRate": 0.04,
+    "issueDate": "2026-01-01",
+    "maturityDate": "2027-03-22",
+    "currency": "USD",
+    "lastCouponYear": 0
+  }
+]

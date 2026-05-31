@@ -73,6 +73,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
     utils/BankExceptions.cpp
     utils/Logger.h
     utils/Logger.cpp
+    utils/JsonLoader.h
+    utils/JsonLoader.cpp
     models/Client.h
     models/Client.cpp
     models/InvestmentAccount.h
@@ -107,6 +109,6 @@ if(APPLE)
     install(FILES launcher.command DESTINATION ${DESTINATION_DIR})
 endif()
 
-copy_files(FILES tastatura.txt COPY_TO_DESTINATION TARGET_NAME ${MAIN_EXECUTABLE_NAME})
+copy_files(FILES tastatura.txt DIRECTORY data COPY_TO_DESTINATION TARGET_NAME ${MAIN_EXECUTABLE_NAME})
 # copy_files(FILES tastatura.txt config.json DIRECTORY images sounds COPY_TO_DESTINATION TARGET_NAME ${MAIN_EXECUTABLE_NAME})
 # copy_files(DIRECTORY images sounds COPY_TO_DESTINATION TARGET_NAME ${MAIN_EXECUTABLE_NAME})

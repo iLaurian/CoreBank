@@ -1,0 +1,20 @@
+[
+  {
+    "cnp": "1900101123456",
+    "name": "John Doe",
+    "address": "123 Silicon Valley",
+    "monthlyIncome": 4500.0
+  },
+  {
+    "cnp": "2900202234567",
+    "name": "Jane Smith",
+    "address": "456 Business Blvd",
+    "monthlyIncome": 8000.0
+  },
+  {
+    "cnp": "0000000000000",
+    "name": "Dummy",
+    "address": "Nowhere",
+    "monthlyIncome": 1000.0
+  }
+]

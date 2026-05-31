@@ -1,0 +1,43 @@
+[
+  {
+    "type": "personal",
+    "iban": "RO12CBIN000000000001",
+    "balance": 1500.0,
+    "currency": "USD",
+    "inceptionDate": "2026-01-10",
+    "ownerCnp": "1900101123456"
+  },
+  {
+    "type": "savings",
+    "iban": "RO12CBIN000000000002",
+    "balance": 500.0,
+    "currency": "EUR",
+    "inceptionDate": "2026-01-15",
+    "ownerCnp": "1900101123456"
+  },
+  {
+    "type": "retirement",
+    "iban": "RO12CBIN000000000003",
+    "balance": 2000.0,
+    "currency": "GBP",
+    "inceptionDate": "2026-01-20",
+    "maturityDate": "2030-01-01",
+    "ownerCnp": "2900202234567"
+  },
+  {
+    "type": "investment",
+    "iban": "RO12CBIN000000000004",
+    "balance": 3000.0,
+    "currency": "USD",
+    "inceptionDate": "2026-01-05",
+    "ownerCnp": "2900202234567"
+  },
+  {
+    "type": "savings",
+    "iban": "RO12CBIN999999999999",
+    "balance": 100.0,
+    "currency": "USD",
+    "inceptionDate": "2026-01-25",
+    "ownerCnp": "1900101123456"
+  }
+]

@@ -5,3 +5,4 @@ The project aims to simulate the backend of a banking system. It will manage the
 ## Resources
 
 - https://gemini.google.com/
+- https://chatgpt.com/
