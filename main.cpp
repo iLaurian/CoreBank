@@ -1,10 +1,21 @@
 #include <iostream>
 #include <exception>
+#include <csignal>
+#include <thread>
+#include <chrono>
 #include "utils/cblogger/Logger.h"
 #include "utils/cbjson/JsonLoader.h"
 #include "server/BankService.h"
 #include "server/HttpServer.h"
 #include "server/Scheduler.h"
+
+namespace {
+    volatile std::sig_atomic_t shutdownRequested = 0;
+
+    void handleShutdownSignal(int) {
+        shutdownRequested = 1;
+    }
+}
 
 int main() {
     try {
@@ -30,8 +41,24 @@ int main() {
 
         const int port = 8080;
         HttpServer server(service, port);
-        server.start();
+        std::signal(SIGINT, handleShutdownSignal);
+        std::signal(SIGTERM, handleShutdownSignal);
 
+        std::thread serverThread([&server]() {
+            server.start();
+        });
+
+        while (!shutdownRequested) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        }
+
+        try {
+            service.persist();
+        } catch (const std::exception& e) {
+            Logger::error(std::string("Persist failed during shutdown: ") + e.what());
+        }
+        server.stop();
+        serverThread.join();
         scheduler.stop();
     } catch (const std::exception& e) {
         std::cerr << "EXCEPTION CAUGHT: " << e.what() << "\n";

@@ -19,11 +19,14 @@ run_valgrind() {
              --show-leak-kinds=all \
              --track-origins=yes \
              --error-exitcode=1 \
-             ./"${BIN_DIR}"/"${EXECUTABLE_NAME}"
+             ./"${BIN_DIR}"/"${EXECUTABLE_NAME}" &
+    local server_pid=$!
+    kill -TERM "${server_pid}"
+    wait "${server_pid}"
+    local exit_code=$?
+    if [[ "${exit_code}" -ne 0 && "${exit_code}" -ne 143 && "${exit_code}" -ne 130 ]]; then
+        return "${exit_code}"
+    fi
 }
 
-if [[ "${RUN_INTERACTIVE}" = true ]]; then
-    run_valgrind
-else
-    tr -d '\r' < "${INPUT_FILENAME}" | run_valgrind
-fi
+run_valgrind

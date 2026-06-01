@@ -51,8 +51,8 @@ static std::string normalizeIban(const std::string& value) {
     return result;
 }
 
-void HttpServer::registerRoutes(httplib::Server& server) {
-    server.Get("/health", [&](const httplib::Request&, httplib::Response& res) {
+void HttpServer::registerRoutes(httplib::Server& httpServer) {
+    httpServer.Get("/health", [&](const httplib::Request&, httplib::Response& res) {
         nlohmann::json payload{
             {"status", "ok"},
             {"date", getCurrentDate()}
@@ -60,7 +60,7 @@ void HttpServer::registerRoutes(httplib::Server& server) {
         setJson(res, payload, 200);
     });
 
-    server.Get("/bank", [&](const httplib::Request&, httplib::Response& res) {
+    httpServer.Get("/bank", [&](const httplib::Request&, httplib::Response& res) {
         std::lock_guard<std::mutex> lock(service.getMutex());
         const Bank& bank = Bank::instance();
         nlohmann::json payload{
@@ -71,7 +71,7 @@ void HttpServer::registerRoutes(httplib::Server& server) {
         setJson(res, payload, 200);
     });
 
-    server.Get("/clients", [&](const httplib::Request&, httplib::Response& res) {
+    httpServer.Get("/clients", [&](const httplib::Request&, httplib::Response& res) {
         std::lock_guard<std::mutex> lock(service.getMutex());
         nlohmann::json payload;
         payload["clients"] = nlohmann::json::array();
@@ -86,7 +86,7 @@ void HttpServer::registerRoutes(httplib::Server& server) {
         setJson(res, payload, 200);
     });
 
-    server.Get(R"(/clients/([0-9]+))", [&](const httplib::Request& req, httplib::Response& res) {
+    httpServer.Get(R"(/clients/([0-9]+))", [&](const httplib::Request& req, httplib::Response& res) {
         const std::string cnp = req.matches[1];
         std::lock_guard<std::mutex> lock(service.getMutex());
         try {
@@ -97,7 +97,7 @@ void HttpServer::registerRoutes(httplib::Server& server) {
         }
     });
 
-    server.Post("/clients", [&](const httplib::Request& req, httplib::Response& res) {
+    httpServer.Post("/clients", [&](const httplib::Request& req, httplib::Response& res) {
         nlohmann::json body;
         if (!parseJsonBody(req, body, res)) return;
         try {
@@ -122,7 +122,7 @@ void HttpServer::registerRoutes(httplib::Server& server) {
         }
     });
 
-    server.Delete(R"(/clients/([0-9]+))", [&](const httplib::Request& req, httplib::Response& res) {
+    httpServer.Delete(R"(/clients/([0-9]+))", [&](const httplib::Request& req, httplib::Response& res) {
         const std::string cnp = req.matches[1];
         try {
             std::lock_guard<std::mutex> lock(service.getMutex());
@@ -134,7 +134,7 @@ void HttpServer::registerRoutes(httplib::Server& server) {
         }
     });
 
-    server.Get(R"(/clients/([0-9]+)/credit-score)", [&](const httplib::Request& req, httplib::Response& res) {
+    httpServer.Get(R"(/clients/([0-9]+)/credit-score)", [&](const httplib::Request& req, httplib::Response& res) {
         const std::string cnp = req.matches[1];
         std::lock_guard<std::mutex> lock(service.getMutex());
         try {
@@ -145,7 +145,7 @@ void HttpServer::registerRoutes(httplib::Server& server) {
         }
     });
 
-    server.Get(R"(/clients/([0-9]+)/net-worth)", [&](const httplib::Request& req, httplib::Response& res) {
+    httpServer.Get(R"(/clients/([0-9]+)/net-worth)", [&](const httplib::Request& req, httplib::Response& res) {
         const std::string cnp = req.matches[1];
         std::lock_guard<std::mutex> lock(service.getMutex());
         try {
@@ -156,7 +156,7 @@ void HttpServer::registerRoutes(httplib::Server& server) {
         }
     });
 
-    server.Get(R"(/clients/([0-9]+)/accounts)", [&](const httplib::Request& req, httplib::Response& res) {
+    httpServer.Get(R"(/clients/([0-9]+)/accounts)", [&](const httplib::Request& req, httplib::Response& res) {
         const std::string cnp = req.matches[1];
         std::lock_guard<std::mutex> lock(service.getMutex());
         try {
@@ -173,7 +173,7 @@ void HttpServer::registerRoutes(httplib::Server& server) {
         }
     });
 
-    server.Get(R"(/clients/([0-9]+)/loans)", [&](const httplib::Request& req, httplib::Response& res) {
+    httpServer.Get(R"(/clients/([0-9]+)/loans)", [&](const httplib::Request& req, httplib::Response& res) {
         const std::string cnp = req.matches[1];
         std::lock_guard<std::mutex> lock(service.getMutex());
         try {
@@ -214,10 +214,10 @@ void HttpServer::registerRoutes(httplib::Server& server) {
         };
     };
 
-    server.Post(R"(/clients/([0-9]+)/accounts/personal)", createAccountHandler(AccountKind::Personal));
-    server.Post(R"(/clients/([0-9]+)/accounts/savings)", createAccountHandler(AccountKind::Savings));
-    server.Post(R"(/clients/([0-9]+)/accounts/retirement)", createAccountHandler(AccountKind::Retirement));
-    server.Post(R"(/clients/([0-9]+)/accounts/investment)", createAccountHandler(AccountKind::Investment));
+    httpServer.Post(R"(/clients/([0-9]+)/accounts/personal)", createAccountHandler(AccountKind::Personal));
+    httpServer.Post(R"(/clients/([0-9]+)/accounts/savings)", createAccountHandler(AccountKind::Savings));
+    httpServer.Post(R"(/clients/([0-9]+)/accounts/retirement)", createAccountHandler(AccountKind::Retirement));
+    httpServer.Post(R"(/clients/([0-9]+)/accounts/investment)", createAccountHandler(AccountKind::Investment));
 
     auto accountGetHandler = [&](AccountKind kind) {
         return [&, kind](const httplib::Request& req, httplib::Response& res) {
@@ -236,10 +236,10 @@ void HttpServer::registerRoutes(httplib::Server& server) {
         };
     };
 
-    server.Get(R"(/accounts/personal/([A-Z0-9]+))", accountGetHandler(AccountKind::Personal));
-    server.Get(R"(/accounts/savings/([A-Z0-9]+))", accountGetHandler(AccountKind::Savings));
-    server.Get(R"(/accounts/retirement/([A-Z0-9]+))", accountGetHandler(AccountKind::Retirement));
-    server.Get(R"(/accounts/investment/([A-Z0-9]+))", accountGetHandler(AccountKind::Investment));
+    httpServer.Get(R"(/accounts/personal/([A-Z0-9]+))", accountGetHandler(AccountKind::Personal));
+    httpServer.Get(R"(/accounts/savings/([A-Z0-9]+))", accountGetHandler(AccountKind::Savings));
+    httpServer.Get(R"(/accounts/retirement/([A-Z0-9]+))", accountGetHandler(AccountKind::Retirement));
+    httpServer.Get(R"(/accounts/investment/([A-Z0-9]+))", accountGetHandler(AccountKind::Investment));
 
     auto transactionsHandler = [&](AccountKind kind) {
         return [&, kind](const httplib::Request& req, httplib::Response& res) {
@@ -264,10 +264,10 @@ void HttpServer::registerRoutes(httplib::Server& server) {
         };
     };
 
-    server.Get(R"(/accounts/personal/([A-Z0-9]+)/transactions)", transactionsHandler(AccountKind::Personal));
-    server.Get(R"(/accounts/savings/([A-Z0-9]+)/transactions)", transactionsHandler(AccountKind::Savings));
-    server.Get(R"(/accounts/retirement/([A-Z0-9]+)/transactions)", transactionsHandler(AccountKind::Retirement));
-    server.Get(R"(/accounts/investment/([A-Z0-9]+)/transactions)", transactionsHandler(AccountKind::Investment));
+    httpServer.Get(R"(/accounts/personal/([A-Z0-9]+)/transactions)", transactionsHandler(AccountKind::Personal));
+    httpServer.Get(R"(/accounts/savings/([A-Z0-9]+)/transactions)", transactionsHandler(AccountKind::Savings));
+    httpServer.Get(R"(/accounts/retirement/([A-Z0-9]+)/transactions)", transactionsHandler(AccountKind::Retirement));
+    httpServer.Get(R"(/accounts/investment/([A-Z0-9]+)/transactions)", transactionsHandler(AccountKind::Investment));
 
     auto depositHandler = [&](AccountKind kind) {
         return [&, kind](const httplib::Request& req, httplib::Response& res) {
@@ -347,22 +347,22 @@ void HttpServer::registerRoutes(httplib::Server& server) {
         };
     };
 
-    server.Post(R"(/accounts/personal/([A-Z0-9]+)/deposit)", depositHandler(AccountKind::Personal));
-    server.Post(R"(/accounts/savings/([A-Z0-9]+)/deposit)", depositHandler(AccountKind::Savings));
-    server.Post(R"(/accounts/retirement/([A-Z0-9]+)/deposit)", depositHandler(AccountKind::Retirement));
-    server.Post(R"(/accounts/investment/([A-Z0-9]+)/deposit)", depositHandler(AccountKind::Investment));
+    httpServer.Post(R"(/accounts/personal/([A-Z0-9]+)/deposit)", depositHandler(AccountKind::Personal));
+    httpServer.Post(R"(/accounts/savings/([A-Z0-9]+)/deposit)", depositHandler(AccountKind::Savings));
+    httpServer.Post(R"(/accounts/retirement/([A-Z0-9]+)/deposit)", depositHandler(AccountKind::Retirement));
+    httpServer.Post(R"(/accounts/investment/([A-Z0-9]+)/deposit)", depositHandler(AccountKind::Investment));
 
-    server.Post(R"(/accounts/personal/([A-Z0-9]+)/withdraw)", withdrawHandler(AccountKind::Personal));
-    server.Post(R"(/accounts/savings/([A-Z0-9]+)/withdraw)", withdrawHandler(AccountKind::Savings));
-    server.Post(R"(/accounts/retirement/([A-Z0-9]+)/withdraw)", withdrawHandler(AccountKind::Retirement));
-    server.Post(R"(/accounts/investment/([A-Z0-9]+)/withdraw)", withdrawHandler(AccountKind::Investment));
+    httpServer.Post(R"(/accounts/personal/([A-Z0-9]+)/withdraw)", withdrawHandler(AccountKind::Personal));
+    httpServer.Post(R"(/accounts/savings/([A-Z0-9]+)/withdraw)", withdrawHandler(AccountKind::Savings));
+    httpServer.Post(R"(/accounts/retirement/([A-Z0-9]+)/withdraw)", withdrawHandler(AccountKind::Retirement));
+    httpServer.Post(R"(/accounts/investment/([A-Z0-9]+)/withdraw)", withdrawHandler(AccountKind::Investment));
 
-    server.Post(R"(/accounts/personal/([A-Z0-9]+)/transfer)", transferHandler(AccountKind::Personal));
-    server.Post(R"(/accounts/savings/([A-Z0-9]+)/transfer)", transferHandler(AccountKind::Savings));
-    server.Post(R"(/accounts/retirement/([A-Z0-9]+)/transfer)", transferHandler(AccountKind::Retirement));
-    server.Post(R"(/accounts/investment/([A-Z0-9]+)/transfer)", transferHandler(AccountKind::Investment));
+    httpServer.Post(R"(/accounts/personal/([A-Z0-9]+)/transfer)", transferHandler(AccountKind::Personal));
+    httpServer.Post(R"(/accounts/savings/([A-Z0-9]+)/transfer)", transferHandler(AccountKind::Savings));
+    httpServer.Post(R"(/accounts/retirement/([A-Z0-9]+)/transfer)", transferHandler(AccountKind::Retirement));
+    httpServer.Post(R"(/accounts/investment/([A-Z0-9]+)/transfer)", transferHandler(AccountKind::Investment));
 
-    server.Post(R"(/accounts/savings/([A-Z0-9]+)/close)", [&](const httplib::Request& req, httplib::Response& res) {
+    httpServer.Post(R"(/accounts/savings/([A-Z0-9]+)/close)", [&](const httplib::Request& req, httplib::Response& res) {
         const int requestId = nextRequestId();
         Logger::info("[" + std::to_string(requestId) + "] POST savings close route=" + req.path);
         nlohmann::json body;
@@ -387,7 +387,7 @@ void HttpServer::registerRoutes(httplib::Server& server) {
         setJson(res, nlohmann::json{{"closedIban", savingsIban}, {"targetIban", targetIban}, {"status", "closed"}}, 200);
     });
 
-    server.Delete(R"(/accounts/([A-Z0-9]+))", [&](const httplib::Request& req, httplib::Response& res) {
+    httpServer.Delete(R"(/accounts/([A-Z0-9]+))", [&](const httplib::Request& req, httplib::Response& res) {
         const int requestId = nextRequestId();
         Logger::info("[" + std::to_string(requestId) + "] DELETE account route=" + req.path);
         const std::string rawIban = req.matches[1];
@@ -402,7 +402,7 @@ void HttpServer::registerRoutes(httplib::Server& server) {
         res.status = 204;
     });
 
-    server.Post(R"(/accounts/investment/([A-Z0-9]+)/bonds)", [&](const httplib::Request& req, httplib::Response& res) {
+    httpServer.Post(R"(/accounts/investment/([A-Z0-9]+)/bonds)", [&](const httplib::Request& req, httplib::Response& res) {
         const int requestId = nextRequestId();
         Logger::info("[" + std::to_string(requestId) + "] POST investment bond route=" + req.path);
         nlohmann::json body;
@@ -440,7 +440,7 @@ void HttpServer::registerRoutes(httplib::Server& server) {
         setJson(res, nlohmann::json{{"status", "added"}, {"bondId", bond.id}}, 201);
     });
 
-    server.Get(R"(/accounts/investment/([A-Z0-9]+)/bonds)", [&](const httplib::Request& req, httplib::Response& res) {
+    httpServer.Get(R"(/accounts/investment/([A-Z0-9]+)/bonds)", [&](const httplib::Request& req, httplib::Response& res) {
         const int requestId = nextRequestId();
         Logger::info("[" + std::to_string(requestId) + "] GET investment bonds route=" + req.path);
         const std::string rawIban = req.matches[1];
@@ -462,7 +462,7 @@ void HttpServer::registerRoutes(httplib::Server& server) {
         setJson(res, payload, 200);
     });
 
-    server.Post("/transfers", [&](const httplib::Request& req, httplib::Response& res) {
+    httpServer.Post("/transfers", [&](const httplib::Request& req, httplib::Response& res) {
         nlohmann::json body;
         if (!parseJsonBody(req, body, res)) return;
         const std::string rawFromIban = body.at("fromIban").get<std::string>();
@@ -481,7 +481,7 @@ void HttpServer::registerRoutes(httplib::Server& server) {
         setJson(res, nlohmann::json{{"status", "completed"}}, 200);
     });
 
-    server.Post(R"(/clients/([0-9]+)/transfers/own)", [&](const httplib::Request& req, httplib::Response& res) {
+    httpServer.Post(R"(/clients/([0-9]+)/transfers/own)", [&](const httplib::Request& req, httplib::Response& res) {
         const std::string cnp = req.matches[1];
         nlohmann::json body;
         if (!parseJsonBody(req, body, res)) return;
@@ -502,7 +502,7 @@ void HttpServer::registerRoutes(httplib::Server& server) {
         }
     });
 
-    server.Post(R"(/clients/([0-9]+)/loans)", [&](const httplib::Request& req, httplib::Response& res) {
+    httpServer.Post(R"(/clients/([0-9]+)/loans)", [&](const httplib::Request& req, httplib::Response& res) {
         const std::string cnp = req.matches[1];
         nlohmann::json body;
         if (!parseJsonBody(req, body, res)) return;
@@ -528,7 +528,10 @@ void HttpServer::registerRoutes(httplib::Server& server) {
 }
 
 void HttpServer::start() {
-    httplib::Server server;
     registerRoutes(server);
     server.listen("0.0.0.0", port);
+}
+
+void HttpServer::stop() {
+    server.stop();
 }
